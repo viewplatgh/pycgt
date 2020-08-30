@@ -1,21 +1,21 @@
 # pycgt
 
-A capitcal gain tax calculator for crypto traders. This is just a toy script, not a mature product. Please notice following known limits of it:
+A capital gain tax calculator for crypto traders. This is just a toy script, not a mature product. Please notice following known limits of it:
 
-- cannot process raw logs from any exchanges, you need to tranform your trading logs into pycgt's format before using it
+- cannot process raw logs from any exchanges, you need to transform your trading logs into pycgt's format before using it
 - limited currency types
-  - supported cryptos: BTC, ETH, LTC, NMC
-  - supported fiats: USD, AUD
+- supported cryptos: BTC, ETH, LTC, NMC
+- supported fiats: USD, AUD
 - limited trading pairs
-  - supported pairs: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt
+- supported pairs: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt
 - designed for Australian tax return, e.g. assuming financial year end between June and July
 
 ## trading logs pycgt can process
 
-A cvs file with following column:
+A csv file with following column:
 
 - Type
-  optional, trasaction type
+  optional, transaction type
 - Exchange
   optional, the exchange where the trade was made
 - Datetime
@@ -106,10 +106,10 @@ Losses of this year only: - $1.61 AUD
 Total losses at the end of the year: - $1.61 AUD
 Net gains of the year: - $1.61 AUD
 Portfolio of the year:
-  btc: 1.0
-  ltc: 0
-  nmc: 0
-  eth: 0
+ btc: 1.0
+ ltc: 0
+ nmc: 0
+ eth: 0
 ========================================================
 
 ========================================================
@@ -123,10 +123,10 @@ Losses of this year only: - $0.00 AUD
 Total losses at the end of the year: - $1.61 AUD
 Net gains of the year:  $707.65 AUD
 Portfolio of the year:
-  btc: 0.0
-  ltc: 0
-  nmc: 0
-  eth: 0
+ btc: 0.0
+ ltc: 0
+ nmc: 0
+ eth: 0
 ========================================================
 ```
 
