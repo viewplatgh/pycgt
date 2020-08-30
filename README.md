@@ -7,7 +7,7 @@ A capital gain tax calculator for crypto traders or investors. This is just a to
   - supported cryptos: BTC, ETH, LTC, NMC
   - supported fiats: USD, AUD
 - limited trading pairs
-- supported pairs: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt
+  - supported pairs: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt
 - designed for Australian tax return, e.g. assuming financial year end between June and July
 
 ## trading logs pycgt can process
