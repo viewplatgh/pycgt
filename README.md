@@ -1,11 +1,11 @@
 # pycgt
 
-A capital gain tax calculator for crypto traders. This is just a toy script, not a mature product. Please notice following known limits of it:
+A capital gain tax calculator for crypto traders or investors. This is just a toy script, not a mature product. Please notice following known limits of it:
 
 - cannot process raw logs from any exchanges, you need to transform your trading logs into pycgt's format before using it
 - limited currency types
-- supported cryptos: BTC, ETH, LTC, NMC
-- supported fiats: USD, AUD
+  - supported cryptos: BTC, ETH, LTC, NMC
+  - supported fiats: USD, AUD
 - limited trading pairs
 - supported pairs: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt
 - designed for Australian tax return, e.g. assuming financial year end between June and July
@@ -15,47 +15,47 @@ A capital gain tax calculator for crypto traders. This is just a toy script, not
 A csv file with following column:
 
 - Type
-  optional, transaction type
+  - optional, transaction type
 - Exchange
-  optional, the exchange where the trade was made
+  - optional, the exchange where the trade was made
 - Datetime
-  important, when the trade happened
+  - important, when the trade happened
 - Operation
-  important, either 'Buy' or 'Sell' if it's a trading transaction
+  - important, either 'Buy' or 'Sell' if it's a trading transaction
 - Pair
-  important, one of "btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt"
+  - important, one of "btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt"
 - BTC
-  optional, the BTC amount issued with the trade
+  - optional, the BTC amount issued with the trade
 - LTC
-  optional, the LTC amount issued with the trade
+  - optional, the LTC amount issued with the trade
 - NMC
-  optional, the NMC amount issued with the trade
+  - optional, the NMC amount issued with the trade
 - USD
-  the USD amount issued with the trade
+  - the USD amount issued with the trade
 - AUD
-  the AUD amount issued with the trade
+  - the AUD amount issued with the trade
 - Fee(BTC)
-  optional, fees paid in BTC
+  - optional, fees paid in BTC
 - Fee(LTC)
-  optional, fees paid in LTC
+  - optional, fees paid in LTC
 - Fee(NMC)
-  optional, fees paid in NMC
+  - optional, fees paid in NMC
 - Fee(USD)
-  optional, fees paid in USD
+  - optional, fees paid in USD
 - Fee(AUD)
-  optional, fees paid in USD
+  - optional, fees paid in USD
 - BTCAUD
-  optional, BTCAUD exchange rate at "Datetime"
+  - optional, BTCAUD exchange rate at "Datetime"
 - BTCUSD
-  optional, BTCUSD exchange rate at "Datetime"
+  - optional, BTCUSD exchange rate at "Datetime"
 - LTCUSD
-  optional, LTCUSD exchange rate at "Datetime"
+  - optional, LTCUSD exchange rate at "Datetime"
 - NMCUSD
-  optional, NMCUSD exchange rate at "Datetime"
+  - optional, NMCUSD exchange rate at "Datetime"
 - AUDUSD
-  optional, AUDUSD exchange rate at "Datetime"
+  - optional, AUDUSD exchange rate at "Datetime"
 - Comments
-  optional, just any comments
+  - optional, just any comments
 
 A csv example (see example.csv):
 
