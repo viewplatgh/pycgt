@@ -1,0 +1,3 @@
+Type,Exchange,Datetime,Operation,Pair,BTC,LTC,USD,AUD,Fee(BTC),Fee(LTC),Fee(USD),Fee(AUD),BTCUSD,LTCUSD,LTCBTC,AUDUSD,Comments
+Market,Coinbase,"2015-12-12T09:11:00.711Z",Buy,BTCUSD,1,,,420,525,,,1.61,1.99,420,,,0.8,
+Market,Coinbase,"2017-07-07T13:40:11.735Z",Sell,BTCUSD,1,,,1838.53,2298.1625,,,4.71,6.05,1838.53,,,0.8,
