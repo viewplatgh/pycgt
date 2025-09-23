@@ -18,6 +18,7 @@ fields = {
     'USD': 'usd',
     'AUD': 'aud',
     'Fee(BTC)': 'fee_btc',
+    'Fee(LTC)': 'fee_ltc',
     'Fee(USD)': 'fee_usd',
     'Fee(AUD)': 'fee_aud',
     'BTCAUD': 'btcaud',
