@@ -4,33 +4,8 @@ import csv
 import copy
 from transaction import Transaction
 from annual_statement import AnnualStatement
+from shared_def import OPERATIONS, FIELDS
 
-fields = {
-    'Type': '_type',
-    'Exchange': 'exchange',
-    'Datetime': 'datetime',
-    'Operation': 'operation',
-    'Pair': 'pair',
-    'BTC': 'btc',
-    'LTC': 'ltc',
-    'NMC': 'nmc',
-    'ETH': 'eth',
-    'USD': 'usd',
-    'AUD': 'aud',
-    'Fee(BTC)': 'fee_btc',
-    'Fee(LTC)': 'fee_ltc',
-    'Fee(USD)': 'fee_usd',
-    'Fee(AUD)': 'fee_aud',
-    'BTCAUD': 'btcaud',
-    'BTCUSD': 'btcusd',
-    'LTCUSD': 'ltcusd',
-    'LTCBTC': 'ltcbtc',
-    'NMCUSD': 'nmcusd',
-    'ETHUSD': 'ethusd',
-    'ETHBTC': 'ethbtc',
-    'AUDUSD': 'audusd',
-    'Comments': 'comments'
-}
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -51,14 +26,12 @@ for item in sys.argv[1:]:
     attrs = None
     for index, row in enumerate(csvcontent):
       if index == 0:
-        attrs = list(map(lambda x: '' if x not in fields else fields[x], row))
+        attrs = list(map(lambda x: '' if x not in FIELDS else FIELDS[x], row))
       else:
         values = list(map(lambda x: x.strip(), row))
         operidx = next(i for i, v in enumerate(attrs) if v == 'operation')
         current_trans = None
-        if str(values[operidx]).lower() in [
-            'buy', 'sell', 'deposit', 'withdrawal', 'loss'
-        ]:
+        if str(values[operidx]).lower() in OPERATIONS:
           try:
             current_trans = Transaction.createFrom(attrs=attrs, values=values)
           except BaseException as exp:
