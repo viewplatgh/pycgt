@@ -2,7 +2,6 @@ import sys
 import pprint
 import csv
 import copy
-from datetime import datetime
 from transaction import Transaction
 from annual_statement import AnnualStatement
 
