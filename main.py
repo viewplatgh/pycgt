@@ -60,6 +60,7 @@ for item in sys.argv[1:]:
           statement.process_transaction(tran)
           statements.append((tran.fiscal_year, statement))
       else:
+        # < 1900, try letting previous statement to process by default
         previous_statement = statements[-1][1] if len(statements) else None
         if previous_statement:
           previous_statement.process_transaction(tran)
