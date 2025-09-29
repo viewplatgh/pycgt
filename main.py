@@ -26,6 +26,7 @@ for item in sys.argv[1:]:
     attrs = None
     for index, row in enumerate(csvcontent):
       if index == 0:
+        # parse header
         attrs = list(map(lambda x: '' if x not in FIELDS else FIELDS[x], row))
       else:
         values = list(map(lambda x: x.strip(), row))
@@ -47,6 +48,7 @@ for item in sys.argv[1:]:
         if statement:
           statement[1].process_transaction(tran)
         else:
+          # new fiscal year, create new statement
           previous_statement = statements[-1][1] if len(statements) else None
           previous_portfolio = copy.deepcopy(
               previous_statement.portfolio) if previous_statement else None

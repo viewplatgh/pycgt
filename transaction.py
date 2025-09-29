@@ -2,6 +2,7 @@ import re
 import pprint
 from datetime import datetime
 from dateutil import parser
+from shared_def import CRYPTOS
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -293,6 +294,7 @@ class Transaction(dict):
 
   @property
   def left2right(self):
+    """ return a tuple which indicates the transaction is from which(left) to which(right) """
     if self.pair and not self.pair in PAIR_SPLIT_MAP:
       raise Exception('Unexpected pair: {}'.format(self.pair))
     if not self.operation in ['buy', 'sell']:
@@ -310,6 +312,7 @@ class Transaction(dict):
 
   @property
   def brief(self):
+    """ return a dict which contains brief information of this transaction """
     brief_keys = ['datetime', 'operation', 'pair', 'aud', 'usd']
     volume_key = None
     left2right = self.left2right
@@ -318,7 +321,7 @@ class Transaction(dict):
     elif self.operation == 'sell':
       volume_key = left2right[0]
     else:
-      for item in ['btc', 'ltc', 'nmc', 'eth']:
+      for item in CRYPTOS:
         if self[item] > 0:
           volume_key = item
           break

@@ -7,6 +7,10 @@ pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
 
 class Portfolio(dict):
+  """ 
+  Portfolio contains all positions of all cryptos
+  It's a dict with key as crypto name, value as list of Position
+  """
   def __init__(self):
     super(Portfolio, self).__init__()
     for item in CRYPTOS:
@@ -15,11 +19,13 @@ class Portfolio(dict):
   def process_transaction(self, tran):
     """ Will either generate portfolio or tax capital gain/loss """
     if tran.left2right[1] in CRYPTOS:
-      # self[tran.left2right[1]].append(Position(tran))  # FIFO
-      self[tran.left2right[1]].insert(0, Position(tran))  # FILO
+      # the list of position will be processed from 0 to end
+      # so append will be FIFO, insert will be FILO
+      # self[tran.left2right[1]].append(Position(tran))
+      self[tran.left2right[1]].insert(0, Position(tran))
 
     if tran.left2right[0] in CRYPTOS:
-      # Damn it! tax event happened
+      # crypto disposal happened
       gains = []
       losses = []
       crypto = tran.left2right[0]
@@ -87,13 +93,12 @@ class Portfolio(dict):
       raise Exception('Unexpected, disposing position not existing')
     return losses
 
+# following code looks unnecessary, commmented out for now
+# def _dict_set(dt, key, value):
+#   dt[key] = value
 
-def _dict_set(dt, key, value):
-  dt[key] = value
-
-
-for item in CRYPTOS:
-  setattr(
-      Portfolio, item, lambda key: property(
-          lambda self: self[key], lambda self, value: _dict_set(
-              self, key, value))(item))
+# for item in CRYPTOS:
+#   setattr(
+#       Portfolio, item, lambda key: property(
+#           lambda self: self[key], lambda self, value: _dict_set(
+#               self, key, value))(item))

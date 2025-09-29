@@ -7,6 +7,10 @@ pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
 
 class AnnualStatement(dict):
+  """ 
+  Annual statement for a fiscal year, the end result for tax return of the year
+  Contains portfolio at the end of the year, all gains and losses during the year
+  """
   def __init__(self, fiscal_year, portfolio=None, losses=None):
     super(AnnualStatement, self).__init__()
     self.fiscal_year = fiscal_year
