@@ -1,0 +1,50 @@
+[locale]
+fiat = "aud"
+
+[options]
+position_accounting = "filo"
+
+[data]
+fiats = ["usd", "aud"]
+cryptos = ["btc", "ltc", "nmc", "eth"]
+operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
+
+[data.fields]
+"Type" = "_type"
+"Exchange" = "exchange"
+"Datetime" = "datetime"
+"Operation" = "operation"
+"Pair" = "pair"
+"BTC" = "btc"
+"LTC" = "ltc"
+"NMC" = "nmc"
+"ETH" = "eth"
+"USD" = "usd"
+"AUD" = "aud"
+"Fee(BTC)" = "fee_btc"
+"Fee(LTC)" = "fee_ltc"
+"Fee(NMC)" = "fee_nmc"
+"Fee(ETH)" = "fee_eth"
+"Fee(USD)" = "fee_usd"
+"Fee(AUD)" = "fee_aud"
+"BTCAUD" = "btcaud"
+"BTCUSD" = "btcusd"
+"LTCUSD" = "ltcusd"
+"LTCBTC" = "ltcbtc"
+"NMCUSD" = "nmcusd"
+"ETHUSD" = "ethusd"
+"ETHBTC" = "ethbtc"
+"AUDUSD" = "audusd"
+"Comments" = "comments"
+
+[data.pair_split_map]
+btcusd = ["btc", "usd"]
+btcaud = ["btc", "aud"]
+ltcusd = ["ltc", "usd"]
+nmcusd = ["nmc", "usd"]
+xethxxbt = ["eth", "btc"]
+xethzusd = ["eth", "usd"]
+ethusd = ["eth", "usd"]
+xltczusd = ["ltc", "usd"]
+xxbtzusd = ["btc", "usd"]
+xltcxxbt = ["ltc", "btc"]

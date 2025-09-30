@@ -1,5 +1,5 @@
 import pprint
-from shared_def import CRYPTOS
+from shared_def import CRYPTOS, POSITION_ACCOUNTING
 from gain_loss import GainLoss
 from position import Position
 
@@ -21,8 +21,10 @@ class Portfolio(dict):
     if tran.left2right[1] in CRYPTOS:
       # the list of position will be processed from 0 to end
       # so append will be FIFO, insert will be FILO
-      # self[tran.left2right[1]].append(Position(tran))
-      self[tran.left2right[1]].insert(0, Position(tran))
+      if POSITION_ACCOUNTING == 'fifo':
+        self[tran.left2right[1]].append(Position(tran))
+      elif POSITION_ACCOUNTING == 'filo':
+        self[tran.left2right[1]].insert(0, Position(tran))
 
     if tran.left2right[0] in CRYPTOS:
       # crypto disposal happened
@@ -52,6 +54,7 @@ class Portfolio(dict):
       return gains, losses
 
     if tran.left2right[1] not in CRYPTOS:
+      # neither left nor right is crypto, skip with logging
       pp.pprint('Skipped non crypto trading...')
       pp.pprint('left2right:')
       pp.pprint(tran.left2right)

@@ -1,32 +1,11 @@
-CRYPTOS = ['btc', 'ltc', 'nmc', 'eth']
+from config_loader import get_config
 
-OPERATIONS = ['buy', 'sell', 'deposit', 'withdrawal', 'loss']
+config = get_config()
 
-FIELDS = {
-    'Type': '_type',
-    'Exchange': 'exchange',
-    'Datetime': 'datetime',
-    'Operation': 'operation',
-    'Pair': 'pair',
-    'BTC': 'btc',
-    'LTC': 'ltc',
-    'NMC': 'nmc',
-    'ETH': 'eth',
-    'USD': 'usd',
-    'AUD': 'aud',
-    'Fee(BTC)': 'fee_btc',
-    'Fee(LTC)': 'fee_ltc',
-    'Fee(NMC)': 'fee_nmc',
-    'Fee(ETH)': 'fee_eth',
-    'Fee(USD)': 'fee_usd',
-    'Fee(AUD)': 'fee_aud',
-    'BTCAUD': 'btcaud',
-    'BTCUSD': 'btcusd',
-    'LTCUSD': 'ltcusd',
-    'LTCBTC': 'ltcbtc',
-    'NMCUSD': 'nmcusd',
-    'ETHUSD': 'ethusd',
-    'ETHBTC': 'ethbtc',
-    'AUDUSD': 'audusd',
-    'Comments': 'comments'
-}
+CRYPTOS = config['data']['cryptos']
+OPERATIONS = config['data']['operations']
+FIELDS = config['data']['fields']
+PAIR_SPLIT_MAP = config['data']['pair_split_map']
+
+POSITION_ACCOUNTING = config['options']['position_accounting']
+DEFAULT_FIAT = config['locale']['fiat']

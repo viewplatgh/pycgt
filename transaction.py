@@ -2,7 +2,7 @@ import re
 import pprint
 from datetime import datetime
 from dateutil import parser
-from shared_def import CRYPTOS
+from shared_def import CRYPTOS, PAIR_SPLIT_MAP
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -75,18 +75,6 @@ PARSER_MAP = {
     'comments': no_parser
 }
 
-PAIR_SPLIT_MAP = {
-    'btcusd': ('btc', 'usd'),
-    'btcaud': ('btc', 'aud'),
-    'ltcusd': ('ltc', 'usd'),
-    'nmcusd': ('nmc', 'usd'),
-    'xethxxbt': ('eth', 'btc'),
-    'xethzusd': ('eth', 'usd'),
-    'ethusd': ('eth', 'usd'),
-    'xltczusd': ('ltc', 'usd'),
-    'xxbtzusd': ('btc', 'usd'),
-    'xltcxxbt': ('ltc', 'btc'),
-}
 
 
 class Transaction(dict):
@@ -300,7 +288,7 @@ class Transaction(dict):
     if not self.operation in ['buy', 'sell']:
       return ('', '')
 
-    splitted = PAIR_SPLIT_MAP[self.pair] if self.pair else ('', '')
+    splitted = tuple(PAIR_SPLIT_MAP[self.pair]) if self.pair else ('', '')
     return (splitted[1], splitted[0]) if self.operation == 'buy' else splitted
 
   @property
