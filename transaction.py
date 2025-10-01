@@ -292,7 +292,7 @@ class Transaction(dict):
     return (splitted[1], splitted[0]) if self.operation == 'buy' else splitted
 
   @property
-  def fiscal_year(self):
+  def financial_year(self):
     if self.datetime.month < 7:
       return self.datetime.year
     else:

@@ -22,6 +22,7 @@ python main.py [csv_files...]
 ```
 
 Example:
+
 ```bash
 python main.py example.csv
 python main.py "BtcTax2018 - July2013-June2014.csv" "BtcTax2018 - July2014-June2015.csv"
@@ -33,7 +34,7 @@ python main.py "BtcTax2018 - July2013-June2014.csv" "BtcTax2018 - July2014-June2
 
 - **main.py**: Entry point that processes CSV files, creates transactions, and generates annual statements
 - **transaction.py**: Handles parsing and validation of individual trading transactions from CSV rows
-- **annual_statement.py**: Manages fiscal year tax calculations, portfolio tracking, and gain/loss reporting
+- **annual_statement.py**: Manages financial year tax calculations, portfolio tracking, and gain/loss reporting
 - **portfolio.py**: Implements FILO (First-In-Last-Out) position tracking and capital gains/loss calculations
 - **position.py**: Represents individual crypto positions with cost basis tracking
 - **gain_loss.py**: Calculates capital gains/losses for tax reporting
@@ -43,7 +44,7 @@ python main.py "BtcTax2018 - July2013-June2014.csv" "BtcTax2018 - July2014-June2
 
 1. CSV files are parsed using field mappings from `shared_def.py`
 2. Each valid row creates a `Transaction` object with datetime parsing and validation
-3. Transactions are grouped by fiscal year into `AnnualStatement` objects
+3. Transactions are grouped by financial year into `AnnualStatement` objects
 4. Each statement maintains a `Portfolio` that tracks crypto positions using FILO accounting
 5. Capital gains/losses are calculated when crypto is sold and positions are matched
 6. Annual tax reports are generated showing gains, losses, and portfolio balances
@@ -58,6 +59,7 @@ python main.py "BtcTax2018 - July2013-June2014.csv" "BtcTax2018 - July2014-June2
 ## CSV Format Requirements
 
 The application expects CSV files with specific columns including:
+
 - Datetime, Operation (Buy/Sell), Pair (trading pair)
 - Crypto amounts: BTC, LTC, NMC, ETH
 - Fiat amounts: USD, AUD

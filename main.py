@@ -42,25 +42,25 @@ for item in sys.argv[1:]:
         else:
           continue
     for tran in parsed_combined_trans:
-      if tran.fiscal_year > 1900:
+      if tran.financial_year > 1900:
         statement = next(
-            (item for item in statements if item[0] == tran.fiscal_year), None)
+            (item for item in statements if item[0] == tran.financial_year), None)
         if statement:
           statement[1].process_transaction(tran)
         else:
-          # new fiscal year, create new statement
+          # new financial year, create new statement
           previous_statement = statements[-1][1] if len(statements) else None
           previous_portfolio = copy.deepcopy(
               previous_statement.portfolio) if previous_statement else None
           if previous_statement:
             previous_statement.create_fee_loss()
           statement = AnnualStatement(
-              fiscal_year=tran.fiscal_year,
+              financial_year=tran.financial_year,
               portfolio=previous_portfolio,
               losses=previous_statement.carried_losses
               if previous_statement else None)
           statement.process_transaction(tran)
-          statements.append((tran.fiscal_year, statement))
+          statements.append((tran.financial_year, statement))
       else:
         # < 1900, try letting previous statement to process by default
         previous_statement = statements[-1][1] if len(statements) else None

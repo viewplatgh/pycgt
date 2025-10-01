@@ -8,12 +8,12 @@ pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
 class AnnualStatement(dict):
   """ 
-  Annual statement for a fiscal year, the end result for tax return of the year
+  Annual statement for a financial year, the end result for tax return of the year
   Contains portfolio at the end of the year, all gains and losses during the year
   """
-  def __init__(self, fiscal_year, portfolio=None, losses=None):
+  def __init__(self, financial_year, portfolio=None, losses=None):
     super(AnnualStatement, self).__init__()
-    self.fiscal_year = fiscal_year
+    self.financial_year = financial_year
     self.portfolio = portfolio if portfolio else Portfolio()
     self.gains = []
     self.losses = []
@@ -34,12 +34,12 @@ class AnnualStatement(dict):
     self['previous_year_loss'] = value
 
   @property
-  def fiscal_year(self):
-    return self['fiscal_year']
+  def financial_year(self):
+    return self['financial_year']
 
-  @fiscal_year.setter
-  def fiscal_year(self, value):
-    self['fiscal_year'] = value
+  @financial_year.setter
+  def financial_year(self, value):
+    self['financial_year'] = value
 
   @property
   def portfolio(self):
@@ -148,7 +148,7 @@ class AnnualStatement(dict):
 
   def report(self):
     print('========================================================')
-    print('Tax return report for year: {}'.format(self.fiscal_year))
+    print('Tax return report for year: {}'.format(self.financial_year))
     print('Gross gains of the year: ${:.2f} AUD'.format(self.gross_gains_sum))
     print('Discountable gains of the year: ${:.2f} AUD'.format(
         self.discountable_gains_sum))
