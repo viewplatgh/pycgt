@@ -10,6 +10,7 @@ from shared_def import OPERATIONS, FIELDS
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
 statements = []
+statements_dict = {}
 print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
     'gain_or_loss', 'aud', 'discountable', 'buy_transaction.aud',
     'buy_transaction.volume', 'buy_transaction.datetime',
@@ -43,10 +44,9 @@ for item in sys.argv[1:]:
           continue
     for tran in parsed_combined_trans:
       if tran.financial_year > 1900:
-        statement = next(
-            (item for item in statements if item[0] == tran.financial_year), None)
+        statement = statements_dict.get(tran.financial_year)
         if statement:
-          statement[1].process_transaction(tran)
+          statement.process_transaction(tran)
         else:
           # new financial year, create new statement
           previous_statement = statements[-1][1] if len(statements) else None
@@ -61,6 +61,7 @@ for item in sys.argv[1:]:
               if previous_statement else None)
           statement.process_transaction(tran)
           statements.append((tran.financial_year, statement))
+          statements_dict[tran.financial_year] = statement
       else:
         # < 1900, try letting previous statement to process by default
         previous_statement = statements[-1][1] if len(statements) else None
