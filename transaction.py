@@ -2,7 +2,7 @@ import re
 import pprint
 from datetime import datetime
 from dateutil import parser
-from shared_def import CRYPTOS, PAIR_SPLIT_MAP
+from shared_def import FY_START_MONTH, CRYPTOS, PAIR_SPLIT_MAP
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -293,7 +293,7 @@ class Transaction(dict):
 
   @property
   def financial_year(self):
-    if self.datetime.month < 7:
+    if self.datetime.month < FY_START_MONTH:
       return self.datetime.year
     else:
       return self.datetime.year + 1
