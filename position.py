@@ -6,7 +6,7 @@ class Position(dict):
     super(Position, self).__init__()
     self.transaction = copy.deepcopy(transaction)
     self.asset = self.transaction.left2right[1]
-    self.aud = self.transaction.aud
+    self.aud = self.transaction.aud + self.transaction.fee_aud
     self.volume = self.transaction[self.asset]
     if self.volume == 0:
       raise AssertionError('Zero volume is not valid')
