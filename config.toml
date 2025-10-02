@@ -1,5 +1,6 @@
 [locale]
 fiat = "aud"
+fy_start_month = 7
 
 [options]
 position_accounting = "filo"
