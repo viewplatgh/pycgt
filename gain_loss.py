@@ -10,6 +10,7 @@ class GainLoss(dict):
     self.left_date = self.right_date = datetime.now()
     self.position = None
     self.matched = 0
+    self.description = ''
 
   @property
   def discountable(self):
@@ -96,6 +97,7 @@ class GainLoss(dict):
         '{}'.format(self.aud),  # aud
         '{}'.format('Yes' if self.discountable else 'No' if self.
                     gain else 'N/A'),  # discountable
+        '{}'.format(self.description),  # description
         '{}'.format(buy_transaction['aud']),  # buy_transaction.aud
         '{}'.format(buy_transaction['volume']),  # buy_transaction.volume
         '{}'.format(buy_transaction['datetime']),  # buy_transaction.datetime
