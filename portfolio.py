@@ -2,6 +2,7 @@ import pprint
 from shared_def import CRYPTOS, POSITION_ACCOUNTING
 from gain_loss import GainLoss
 from position import Position
+from transaction import Transaction
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -16,7 +17,7 @@ class Portfolio(dict):
     for item in CRYPTOS:
       self[item] = []
 
-  def process_transaction(self, tran):
+  def process_buy_sell_transaction(self, tran):
     """ Will either generate portfolio or tax capital gain/loss """
     if tran.left2right[1] in CRYPTOS:
       # the list of position will be processed from 0 to end
@@ -61,6 +62,56 @@ class Portfolio(dict):
       pp.pprint(tran.left2right)
       pp.pprint(tran)
     return (None, None)
+  
+  def process_non_buy_sell_transaction(self, tran):
+    """ Handle fee paid in crypto in non buy/sell transaction
+    Regard it as tax event of disposing the crypto as well
+    the same as sell, will result in gain or loss
+    and cost base value of the fee is regarded as loss
+    return all the (gains, losses) same as process_buy_sell_transaction
+    """
+    fee_aud = getattr(tran, 'fee_aud')
+    for crypto in CRYPTOS:
+      feefield = 'fee_{}'.format(crypto.lower())
+      if hasattr(tran, feefield):
+        volume = getattr(tran, feefield)
+        if volume > 0:
+          gains = []
+          losses = []
+          disposing_price = fee_aud / volume
+          for item in self[crypto]: # go through positions list of the crypto to dispose, from 0 to end
+            if item.volume > 0:
+              gl = GainLoss()
+              gl.transaction = Transaction.mock_sell_transaction(tran)
+              gl.position = item
+              gl.left_date = item.transaction.datetime
+              gl.right_date = tran.datetime
+              matching = min(item.volume, volume)
+              item.volume -= matching
+              volume -= matching
+              gl.matched = matching
+              gl.aud = (disposing_price - item.price) * matching
+              gains.append(gl) if gl.gain else losses.append(gl)
+              print(gl.brief_csv)
+              incidental_loss = GainLoss()
+              incidental_loss.description = 'Incidental loss because of fee paid in crypto'
+              incidental_loss.transaction = tran
+              incidental_loss.aud = -abs(item.price * matching)
+              losses.append(incidental_loss)
+              print(incidental_loss.brief_csv)
+              if volume < 0.00000001:
+                break
+          if volume > 0.00000001:
+            raise Exception('Unexpected, disposing position not existing')
+          return gains, losses
+    
+    # no fee paid in crypto, just create loss based on fee_aud
+    incidental_loss = GainLoss()
+    incidental_loss.description = 'Incidental loss because of fee paid in fiat'
+    incidental_loss.transaction = tran
+    incidental_loss.aud = -abs(fee_aud)
+    print(incidental_loss.brief_csv)
+    return (None, [incidental_loss])
 
   def dispose_without_tax_event(self, crypto, volume):
     for item in self[crypto]:

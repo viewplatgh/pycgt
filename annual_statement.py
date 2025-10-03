@@ -68,19 +68,17 @@ class AnnualStatement(dict):
   def process_transaction(self, tran):
     self.transactions.append(tran)
     if tran.operation in ['buy', 'sell']:
-      gains, losses = self.portfolio.process_transaction(tran)
+      gains, losses = self.portfolio.process_buy_sell_transaction(tran)
       if gains:
         self.gains.extend(gains)
       if losses:
         self.losses.extend(losses)
     elif tran.operation in ['deposit', 'withdrawal']:
-      for crypto in CRYPTOS:
-        feefield = 'fee_{}'.format(crypto.lower())
-        if hasattr(tran, feefield):
-          volume = getattr(tran, feefield)
-          if volume > 0:
-            self.portfolio.dispose_without_tax_event(crypto, volume)
-            break
+      gains, losses = self.portfolio.process_non_buy_sell_transaction(tran)
+      if gains:
+        self.gains.extend(gains)
+      if losses:
+        self.losses.extend(losses)
     elif tran.operation == 'loss':
       for crypto in CRYPTOS:
         cryptofield = crypto.lower()

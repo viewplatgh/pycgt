@@ -1,8 +1,9 @@
 import re
 import pprint
+import copy
 from datetime import datetime
 from dateutil import parser
-from shared_def import FY_START_MONTH, CRYPTOS, PAIR_SPLIT_MAP
+from shared_def import FY_START_MONTH, CRYPTOS, PAIR_SPLIT_MAP, DEFAULT_FIAT
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -297,11 +298,13 @@ class Transaction(dict):
       return self.datetime.year
     else:
       return self.datetime.year + 1
+    
+  BRIEF_KEYS = ['datetime', 'operation', 'pair', 'aud', 'usd', 'volume']
 
   @property
   def brief(self):
     """ return a dict which contains brief information of this transaction """
-    brief_keys = ['datetime', 'operation', 'pair', 'aud', 'usd']
+    brief_keys = Transaction.BRIEF_KEYS[:-1] # exclude volume
     volume_key = None
     left2right = self.left2right
     if self.operation == 'buy':
@@ -317,6 +320,35 @@ class Transaction(dict):
     if volume_key:
       result.update(volume=self[volume_key])
     return result
+  
+  @staticmethod
+  def create_na_brief():
+    return dict(
+        **{
+            my_key: 'N/A'
+            for my_key in
+            Transaction.BRIEF_KEYS
+        })
+  
+  @staticmethod
+  def mock_sell_transaction(tran):
+    """ create mock sell transaction from a non buy/sell transaction crypto fee """
+    if tran.operation in ['buy', 'sell']:
+      raise Exception('Cannot mock sell transaction from buy/sell transaction')
+    mocked = copy.deepcopy(tran)
+    mocked.operation = 'sell'
+    feecrypto = None
+    for crypto in CRYPTOS:
+      feecrypto_field = 'fee_{}'.format(crypto)
+      if hasattr(tran, feecrypto_field):
+        volume = getattr(tran, feecrypto_field)
+        if volume > 0:
+          feecrypto = crypto
+          break
+    if not feecrypto:
+      raise Exception('Cannot find crypto fee in transaction')
+    mocked.pair = '{}{}'.format(feecrypto, DEFAULT_FIAT)
+    return mocked
 
   def can_combine(self, trans):
     """ can combine """

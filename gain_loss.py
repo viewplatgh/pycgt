@@ -1,12 +1,15 @@
 import copy
 from datetime import datetime
-
+from position import Position
+from transaction import Transaction
 
 class GainLoss(dict):
   def __init__(self):
     super(GainLoss, self).__init__()
     self.aud = 0
     self.left_date = self.right_date = datetime.now()
+    self.position = None
+    self.matched = 0
 
   @property
   def discountable(self):
@@ -83,9 +86,11 @@ class GainLoss(dict):
 
   @property
   def brief_csv(self):
-    position = self.position.brief
-    buy_transaction = self.position.transaction.brief
-    sell_transaction = self.transaction.brief
+    if self.position is None:
+      print('self.position is None')
+    position = self.position.brief if self.position else Position.create_na_brief()
+    buy_transaction = self.position.transaction.brief if self.position else Transaction.create_na_brief()
+    sell_transaction = self.transaction.brief if self.position else Transaction.create_na_brief()
     row = [
         '{}'.format('gain' if self.gain else 'loss'),  # gain_or_loss
         '{}'.format(self.aud),  # aud

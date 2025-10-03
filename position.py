@@ -57,11 +57,22 @@ class Position(dict):
   def initial_volume(self):
     return self['initial_volume']
 
+  BRIEF_KEYS = ['asset', 'aud', 'volume', 'price', 'initial_volume']
+
   @property
   def brief(self):
     return dict(
         **{
             my_key: self[my_key]
             for my_key in
-            ['asset', 'aud', 'volume', 'price', 'initial_volume']
+            Position.BRIEF_KEYS
+        })
+  
+  @staticmethod
+  def create_na_brief():
+    return dict(
+        **{
+            my_key: 'N/A'
+            for my_key in
+            Position.BRIEF_KEYS
         })
