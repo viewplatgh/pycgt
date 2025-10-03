@@ -135,15 +135,6 @@ class AnnualStatement(dict):
     else:
       return None
 
-  def create_fee_loss(self):
-    if self.feeloss:
-      raise Exception('Fee loss cannot be created more than once')
-    self.feeloss = GainLoss()
-    self.feeloss.aud = -abs(
-        sum([item.fee_aud for item in self.transactions], 0))
-    self.feeloss.description = "Loss of transaction fees"
-    self.losses.append(self.feeloss)
-
   def report(self):
     print('========================================================')
     print('Tax return report for year: {}'.format(self.financial_year))

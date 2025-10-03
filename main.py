@@ -52,8 +52,6 @@ for item in sys.argv[1:]:
           previous_statement = statements[-1][1] if len(statements) else None
           previous_portfolio = copy.deepcopy(
               previous_statement.portfolio) if previous_statement else None
-          if previous_statement:
-            previous_statement.create_fee_loss()
           statement = AnnualStatement(
               financial_year=tran.financial_year,
               portfolio=previous_portfolio,
