@@ -1,5 +1,5 @@
 import pprint
-from shared_def import CRYPTOS, POSITION_ACCOUNTING
+from shared_def import FIATS, CRYPTOS, POSITION_ACCOUNTING
 from gain_loss import GainLoss
 from position import Position
 from transaction import Transaction
@@ -26,6 +26,8 @@ class Portfolio(dict):
         self[tran.left2right[1]].append(Position(tran))
       elif POSITION_ACCOUNTING == 'filo':
         self[tran.left2right[1]].insert(0, Position(tran))
+      else:
+        raise Exception('Unexpected POSITION_ACCOUNTING: {}'.format(POSITION_ACCOUNTING))
 
     if tran.left2right[0] in CRYPTOS:
       # crypto disposal happened
@@ -53,6 +55,16 @@ class Portfolio(dict):
             break
       if disposed_volume > 0.00000001:
         raise Exception('Unexpected, disposing position not existing')
+      
+      if tran.left2right[1] in FIATS:
+        # dispose crypto for fiat, simply treat fee of fiat as incidental loss
+        incidental_loss = GainLoss()
+        incidental_loss.description = 'Incidental loss because of fee paid in fiat'
+        incidental_loss.transaction = tran
+        incidental_loss.aud = -abs(tran['fee_aud'])
+        losses.append(incidental_loss)
+        print(incidental_loss.brief_csv)
+
       return gains, losses
 
     if tran.left2right[1] not in CRYPTOS:
@@ -79,7 +91,8 @@ class Portfolio(dict):
           gains = []
           losses = []
           disposing_price = fee_aud / volume
-          for item in self[crypto]: # go through positions list of the crypto to dispose, from 0 to end
+          # go through positions list of the crypto to dispose, from 0 to end
+          for item in self[crypto]:
             if item.volume > 0:
               gl = GainLoss()
               gl.transaction = Transaction.mock_sell_transaction(tran)
@@ -93,6 +106,7 @@ class Portfolio(dict):
               gl.aud = (disposing_price - item.price) * matching
               gains.append(gl) if gl.gain else losses.append(gl)
               print(gl.brief_csv)
+              # cost base of disposed crypto(fee) is regarded as incidental loss
               incidental_loss = GainLoss()
               incidental_loss.description = 'Incidental loss because of fee paid in crypto'
               incidental_loss.transaction = tran

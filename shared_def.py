@@ -2,6 +2,7 @@ from config_loader import get_config
 
 config = get_config()
 
+FIATS = config['data']['fiats']
 CRYPTOS = config['data']['cryptos']
 OPERATIONS = config['data']['operations']
 FIELDS = config['data']['fields']
