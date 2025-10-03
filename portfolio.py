@@ -127,17 +127,6 @@ class Portfolio(dict):
     print(incidental_loss.brief_csv)
     return (None, [incidental_loss])
 
-  def dispose_without_tax_event(self, crypto, volume):
-    for item in self[crypto]:
-      if item.volume > 0:
-        matching = min(item.volume, volume)
-        item.volume -= matching
-        volume -= matching
-        if volume == 0:
-          break
-    if volume != 0:
-      raise Exception('Failed to dispose')
-
   def dispose_as_loss(self, crypto, tran):
     losses = []
     disposed_volume = tran[crypto]
