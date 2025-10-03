@@ -4,14 +4,14 @@ import copy
 class Position(dict):
   def __init__(self, transaction):
     super(Position, self).__init__()
-    self.transaction = copy.deepcopy(transaction)
+    self.transaction = copy.deepcopy(transaction) # backup initial transaction for brief
     self.asset = self.transaction.left2right[1]
-    self.aud = self.transaction.aud + self.transaction.fee_aud
+    self.aud = self.transaction.aud + self.transaction.fee_aud # include fee in cost base
     self.volume = self.transaction[self.asset]
     if self.volume == 0:
       raise AssertionError('Zero volume is not valid')
-    self['initial_volume'] = self.volume
-    self.price = self.aud / self.volume
+    self['initial_volume'] = self.volume # backup initial volume
+    self.price = self.aud / self.volume # cost price
 
   @property
   def asset(self):

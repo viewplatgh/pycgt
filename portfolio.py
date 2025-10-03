@@ -33,6 +33,7 @@ class Portfolio(dict):
       crypto = tran.left2right[0]
       disposed_volume = tran[crypto]
 
+      # go through positions list of the crypto to dispose, from 0 to end
       for item in self[crypto]:
         if item.volume > 0:
           gl = GainLoss()
