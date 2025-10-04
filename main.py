@@ -6,6 +6,8 @@ from transaction import Transaction
 from annual_statement import AnnualStatement
 from shared_def import OPERATIONS, FIELDS
 
+from logger import logger
+
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -37,7 +39,7 @@ for item in sys.argv[1:]:
           try:
             current_trans = Transaction.createFrom(attrs=attrs, values=values)
           except BaseException as exp:
-            pp.pprint(exp)
+            logger.error(pp.pformat(exp))
             continue
           parsed_combined_trans.append(current_trans)
         else:

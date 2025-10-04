@@ -3,6 +3,7 @@ from shared_def import FIATS, CRYPTOS, POSITION_ACCOUNTING
 from gain_loss import GainLoss
 from position import Position
 from transaction import Transaction
+from logger import logger
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -69,10 +70,7 @@ class Portfolio(dict):
 
     if tran.left2right[1] not in CRYPTOS:
       # neither left nor right is crypto, skip with logging
-      pp.pprint('Skipped non crypto trading...')
-      pp.pprint('left2right:')
-      pp.pprint(tran.left2right)
-      pp.pprint(tran)
+      logger.warning('Skipped non crypto trading, left2right:{}'.format(tran.left2right))
     return (None, None)
   
   def process_non_buy_sell_transaction(self, tran):

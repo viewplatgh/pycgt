@@ -87,8 +87,6 @@ class GainLoss(dict):
 
   @property
   def brief_csv(self):
-    if self.position is None:
-      print('self.position is None')
     position = self.position.brief if self.position else Position.create_na_brief()
     buy_transaction = self.position.transaction.brief if self.position else Transaction.create_na_brief()
     sell_transaction = self.transaction.brief if self.position else Transaction.create_na_brief()
