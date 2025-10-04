@@ -25,7 +25,7 @@ print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.for
 for item in sys.argv[1:]:
   with open(item, 'r') as csvfile:
     csvcontent = csv.reader(csvfile, delimiter=',', quotechar='"')
-    parsed_combined_trans = []
+    parsed_trans = []
     attrs = None
     for index, row in enumerate(csvcontent):
       if index == 0:
@@ -41,10 +41,10 @@ for item in sys.argv[1:]:
           except BaseException as exp:
             logger.error(pp.pformat(exp))
             continue
-          parsed_combined_trans.append(current_trans)
+          parsed_trans.append(current_trans)
         else:
           continue
-    for tran in parsed_combined_trans:
+    for tran in parsed_trans:
       if tran.financial_year > 1900:
         statement = statements_dict.get(tran.financial_year)
         if statement:
