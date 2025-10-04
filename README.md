@@ -93,40 +93,45 @@ python main.py example.csv
 if everything is ok, the output would be:
 
 ```log
-ain_or_loss,aud,discountable,buy_transaction.aud,buy_transaction.volume,buy_transaction.datetime,buy_transaction.operation,buy_transaction.pair,buy_transaction.usd,position.asset,position.aud,position.initial_volume,position.price,position.volume,matched,sell_transaction.aud,sell_transaction.volume,sell_transaction.datetime,sell_transaction.operation,sell_transaction.pair,sell_transaction.usd
-gain,1418.53,Yes,420.0,1.0,2015-12-12 09:11:00.711000+00:00,buy,btcusd,0.0,btc,420.0,1.0,420.0,1.0,1.0,1838.53,1.0,2017-07-07 13:40:11.735000+00:00,sell,btcusd,0.0
+gain_or_loss,datetime,aud,discountable,description,buy_transaction.aud,buy_transaction.volume,buy_transaction.datetime,buy_transaction.operation,buy_transaction.pair,buy_transaction.usd,position.asset,position.aud,position.initial_volume,position.price,position.volume,matched,sell_transaction.aud,sell_transaction.volume,sell_transaction.datetime,sell_transaction.operation,sell_transaction.pair,sell_transaction.usd
+loss,2024-09-07 09:11:00.711000+00:00,-27.46421467,N/A,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,buy,btcaud,0.0,btc,108633.19467,1.0,108633.19467,1.0,0.001,0.0,0.999,2024-09-07 09:11:00.711000+00:00,sell,btcaud,0.0
+loss,2024-09-07 09:11:00.711000+00:00,-108.63319467,N/A,Incidental loss because of fee paid in crypto,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0,0.0,0.001,2024-09-07 09:11:00.711000+00:00,withdrawal,,0.0
+gain,2025-03-15 09:11:00.711000+00:00,24.652365330000002,Yes,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,buy,btcaud,0.0,btc,108633.19467,1.0,108633.19467,0.999,0.001,0.0,0.998,2025-03-15 09:11:00.711000+00:00,sell,btcaud,0.0
+loss,2025-03-15 09:11:00.711000+00:00,-108.63319467,N/A,Incidental loss because of fee paid in crypto,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0,0.0,0.001,2025-03-15 09:11:00.711000+00:00,withdrawal,,0.0
+gain,2025-06-30 13:40:11.735000+00:00,54080.53551400998,Yes,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,buy,btcaud,0.0,btc,108633.19467,1.0,108633.19467,0.998,0.997,162387.8306,0.997,2025-06-30 13:40:11.735000+00:00,sell,btcaud,0.0
+loss,2025-06-30 13:40:11.735000+00:00,-162.87646,N/A,Incidental loss because of fee paid in fiat,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0,162387.8306,0.997,2025-06-30 13:40:11.735000+00:00,sell,btcaud,0.0
 ========================================================
-Tax return report for year: 2016
+Tax return report for year: 2024
 Gross gains of the year: $0.00 AUD
 Discountable gains of the year: $0.00 AUD
 Non-discountable gains of the year: $0.00 AUD
 Taxable gains of the year: $0.00 AUD
 Losses carried from previous year: - $0.00 AUD
-Losses of this year only: - $1.61 AUD
-Total losses at the end of the year: - $1.61 AUD
-Net gains of the year: - $1.61 AUD
+Losses of this year only: - $0.00 AUD
+Total losses at the end of the year: - $0.00 AUD
+Net gains of the year:  $0.00 AUD
 Portfolio of the year:
- btc: 1.0
- ltc: 0
- nmc: 0
- eth: 0
+  btc: 1.0
+  ltc: 0
+  nmc: 0
+  eth: 0
 ========================================================
 
 ========================================================
-Tax return report for year: 2018
-Gross gains of the year: $1418.53 AUD
-Discountable gains of the year: $1418.53 AUD
+Tax return report for year: 2025
+Gross gains of the year: $54105.19 AUD
+Discountable gains of the year: $54105.19 AUD
 Non-discountable gains of the year: $0.00 AUD
-Taxable gains of the year: $709.26 AUD
-Losses carried from previous year: - $1.61 AUD
-Losses of this year only: - $0.00 AUD
-Total losses at the end of the year: - $1.61 AUD
-Net gains of the year:  $707.65 AUD
+Taxable gains of the year: $27052.59 AUD
+Losses carried from previous year: - $0.00 AUD
+Losses of this year only: - $407.61 AUD
+Total losses at the end of the year: - $407.61 AUD
+Net gains of the year:  $26644.99 AUD
 Portfolio of the year:
- btc: 0.0
- ltc: 0
- nmc: 0
- eth: 0
+  btc: 0.0010000000000000009
+  ltc: 0
+  nmc: 0
+  eth: 0
 ========================================================
 ```
 

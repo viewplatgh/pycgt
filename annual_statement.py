@@ -92,7 +92,8 @@ class AnnualStatement(dict):
         loss = GainLoss()
         loss.aud = -abs(tran.aud)
         loss.description = 'Arbitrary loss because of: ' + tran.comments
-        loss.left_date = loss.right_date = None
+        loss.left_date = loss.right_date = tran.datetime
+        print(loss.brief_csv)
         self.losses.append(loss)
     else:
       raise Exception('Unexpected transaction')

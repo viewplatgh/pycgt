@@ -58,13 +58,15 @@ class Portfolio(dict):
         raise Exception('Unexpected, disposing position not existing')
       
       if tran.left2right[1] in FIATS:
-        # dispose crypto for fiat, simply treat fee of fiat as incidental loss
-        incidental_loss = GainLoss()
-        incidental_loss.description = 'Incidental loss because of fee paid in fiat'
-        incidental_loss.transaction = tran
-        incidental_loss.aud = -abs(tran['fee_aud'])
-        losses.append(incidental_loss)
-        print(incidental_loss.brief_csv)
+          # dispose crypto for fiat, simply treat fee of fiat as incidental loss
+        if tran['fee_aud'] > 0:
+          incidental_loss = GainLoss()
+          incidental_loss.description = 'Incidental loss because of fee paid in fiat'
+          incidental_loss.transaction = tran
+          incidental_loss.left_date = incidental_loss.right_date = tran.datetime
+          incidental_loss.aud = -abs(tran['fee_aud'])
+          losses.append(incidental_loss)
+          print(incidental_loss.brief_csv)
 
       return gains, losses
 
@@ -108,7 +110,10 @@ class Portfolio(dict):
               incidental_loss = GainLoss()
               incidental_loss.description = 'Incidental loss because of fee paid in crypto'
               incidental_loss.transaction = tran
+              incidental_loss.transaction.volume = getattr(tran, feefield)
               incidental_loss.aud = -abs(item.price * matching)
+              incidental_loss.left_date = item.transaction.datetime
+              incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
               print(incidental_loss.brief_csv)
               if volume < 0.00000001:
@@ -122,6 +127,7 @@ class Portfolio(dict):
     incidental_loss.description = 'Incidental loss because of fee paid in fiat'
     incidental_loss.transaction = tran
     incidental_loss.aud = -abs(fee_aud)
+    incidental_loss.left_date = incidental_loss.right_date = tran.datetime
     print(incidental_loss.brief_csv)
     return (None, [incidental_loss])
 

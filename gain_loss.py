@@ -7,8 +7,9 @@ class GainLoss(dict):
   def __init__(self):
     super(GainLoss, self).__init__()
     self.aud = 0
-    self.left_date = self.right_date = datetime.now()
+    self.left_date = self.right_date = None
     self.position = None
+    self.transaction = None
     self.matched = 0
     self.description = ''
 
@@ -89,9 +90,10 @@ class GainLoss(dict):
   def brief_csv(self):
     position = self.position.brief if self.position else Position.create_na_brief()
     buy_transaction = self.position.transaction.brief if self.position else Transaction.create_na_brief()
-    sell_transaction = self.transaction.brief if self.position else Transaction.create_na_brief()
+    sell_transaction = self.transaction.brief if self.transaction else Transaction.create_na_brief()
     row = [
         '{}'.format('gain' if self.gain else 'loss'),  # gain_or_loss
+        '{}'.format(self.right_date), # datetime
         '{}'.format(self.aud),  # aud
         '{}'.format('Yes' if self.discountable else 'No' if self.
                     gain else 'N/A'),  # discountable
