@@ -40,35 +40,27 @@ for item in sys.argv[1:]:
             current_trans = Transaction.createFrom(attrs=attrs, values=values)
           except BaseException as exp:
             logger.error(pp.pformat(exp))
-            continue
+            raise
           parsed_trans.append(current_trans)
         else:
           continue
     for tran in parsed_trans:
-      if tran.financial_year > 1900:
-        statement = statements_dict.get(tran.financial_year)
-        if statement:
-          statement.process_transaction(tran)
-        else:
-          # new financial year, create new statement
-          previous_statement = statements[-1][1] if len(statements) else None
-          previous_portfolio = copy.deepcopy(
-              previous_statement.portfolio) if previous_statement else None
-          statement = AnnualStatement(
-              financial_year=tran.financial_year,
-              portfolio=previous_portfolio,
-              losses=previous_statement.carried_losses
-              if previous_statement else None)
-          statement.process_transaction(tran)
-          statements.append((tran.financial_year, statement))
-          statements_dict[tran.financial_year] = statement
+      statement = statements_dict.get(tran.financial_year)
+      if statement:
+        statement.process_transaction(tran)
       else:
-        # < 1900, try letting previous statement to process by default
+        # new financial year, create new statement
         previous_statement = statements[-1][1] if len(statements) else None
-        if previous_statement:
-          previous_statement.process_transaction(tran)
-        else:
-          raise Exception('Not knowing which year is the transaction')
+        previous_portfolio = copy.deepcopy(
+            previous_statement.portfolio) if previous_statement else None
+        statement = AnnualStatement(
+            financial_year=tran.financial_year,
+            portfolio=previous_portfolio,
+            losses=previous_statement.carried_losses
+            if previous_statement else None)
+        statement.process_transaction(tran)
+        statements.append((tran.financial_year, statement))
+        statements_dict[tran.financial_year] = statement
 
 for item in statements:
   item[1].report()

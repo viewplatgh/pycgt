@@ -28,7 +28,7 @@ def float_parser(x):
 def datetime_parser(x):
   """ datetime parser """
   if not x:
-    return datetime(1899, 1, 1, 0, 0, 0)
+    return None
   try:
     result = datetime.strptime(x, '%m/%d/%Y %H:%M:%S')
     return result
@@ -94,6 +94,9 @@ class Transaction(dict):
     for item in zipped:
       if item[0] in PARSER_MAP:
         trans[item[0]] = PARSER_MAP[item[0]](item[1])
+    
+    if trans.datetime is None:
+      raise Exception('Missing datetime in transaction: {}'.format(pp.pformat(trans)))
     return trans
 
   @property
