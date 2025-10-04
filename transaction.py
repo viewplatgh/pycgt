@@ -3,7 +3,8 @@ import pprint
 import copy
 from datetime import datetime
 from dateutil import parser
-from shared_def import FY_START_MONTH, CRYPTOS, PAIR_SPLIT_MAP, DEFAULT_FIAT
+from shared_def import FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP, DEFAULT_FIAT
+from logger import logger
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
@@ -83,6 +84,7 @@ class Transaction(dict):
     super(Transaction, self).__init__()
     for key, value in PARSER_MAP.items():
       self[key] = value('')
+    self.volume = None
 
   @classmethod
   def createFrom(cls, attrs, values):
@@ -282,6 +284,14 @@ class Transaction(dict):
     self['comments'] = value
 
   @property
+  def volume(self):
+    return self['volume']
+
+  @volume.setter
+  def volume(self, value):
+    self['volume'] = value
+
+  @property
   def left2right(self):
     """ return a tuple which indicates the transaction is from which(left) to which(right) """
     if self.pair and not self.pair in PAIR_SPLIT_MAP:
@@ -305,20 +315,31 @@ class Transaction(dict):
   def brief(self):
     """ return a dict which contains brief information of this transaction """
     brief_keys = Transaction.BRIEF_KEYS[:-1] # exclude volume
-    volume_key = None
-    left2right = self.left2right
-    if self.operation == 'buy':
-      volume_key = left2right[1]
-    elif self.operation == 'sell':
-      volume_key = left2right[0]
-    else:
-      for item in CRYPTOS:
-        if self[item] > 0:
-          volume_key = item
-          break
     result = dict(**{my_key: self[my_key] for my_key in brief_keys})
-    if volume_key:
-      result.update(volume=self[volume_key])
+    if self.volume is not None:
+      result.update(volume=self.volume)
+    else:
+      volume_key = None
+      left2right = self.left2right
+      if self.operation == 'buy':
+        volume_key = left2right[1]
+      elif self.operation == 'sell':
+        volume_key = left2right[0]
+      else:
+        for item in CRYPTOS:
+          if self[item] > 0:
+            volume_key = item
+            break
+        if volume_key is None:
+          for item in FIATS:
+            if self[item] > 0:
+              volume_key = item
+              break
+      if volume_key:
+        result.update(volume=self[volume_key])      
+      else:
+        logger.warning('Cannot find volume for transaction: {}'.format(pp.pformat(self)))
+        result.update(volume='N/A')
     return result
   
   @staticmethod

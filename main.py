@@ -13,8 +13,8 @@ pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
 
 statements = []
 statements_dict = {}
-print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
-    'gain_or_loss', 'aud', 'discountable', 'description', 'buy_transaction.aud',
+print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
+    'gain_or_loss', 'datetime', 'aud', 'discountable', 'description', 'buy_transaction.aud',
     'buy_transaction.volume', 'buy_transaction.datetime',
     'buy_transaction.operation', 'buy_transaction.pair', 'buy_transaction.usd',
     'position.asset', 'position.aud', 'position.initial_volume',
