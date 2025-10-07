@@ -1,5 +1,5 @@
 import pprint
-from shared_def import DEFAULT_FIAT, FIATS, CRYPTOS, POSITION_ACCOUNTING
+from shared_def import DEFAULT_FIAT, FIATS, CRYPTOS, POSITION_ACCOUNTING, PRECISION_THRESHOLD
 from gain_loss import GainLoss
 from position import Position
 from transaction import Transaction
@@ -52,9 +52,9 @@ class Portfolio(dict):
           gl.aud = (tran.aud / tran[crypto] - item.price) * matching
           gains.append(gl) if gl.gain else losses.append(gl)
           print(gl.brief_csv)
-          if disposed_volume < 0.00000001:
+          if disposed_volume < PRECISION_THRESHOLD:
             break
-      if disposed_volume > 0.00000001:
+      if disposed_volume > PRECISION_THRESHOLD:
         raise Exception('Unexpected, disposing position not existing')
       
       if tran.left2right[1] in FIATS:
@@ -103,9 +103,9 @@ class Portfolio(dict):
               incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
               print(incidental_loss.brief_csv)
-              if volume < 0.00000001:
+              if volume < PRECISION_THRESHOLD:
                 break
-          if volume > 0.00000001:
+          if volume > PRECISION_THRESHOLD:
             raise Exception('Unexpected, disposing position not existing')
         elif fee_fiat > 0:
           # simply treat position fee of fiat as incidental loss as no crypto fee information
@@ -170,9 +170,9 @@ class Portfolio(dict):
               incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
               print(incidental_loss.brief_csv)
-              if volume < 0.00000001:
+              if volume < PRECISION_THRESHOLD:
                 break
-          if volume > 0.00000001:
+          if volume > PRECISION_THRESHOLD:
             raise Exception('Unexpected, disposing position not existing')
           return gains, losses
     
@@ -203,9 +203,9 @@ class Portfolio(dict):
         gl.aud = -matching * item.price
         losses.append(gl)
         print(gl.brief_csv)
-        if disposed_volume < 0.00000001:
+        if disposed_volume < PRECISION_THRESHOLD:
           break
-    if disposed_volume > 0.00000001:
+    if disposed_volume > PRECISION_THRESHOLD:
       raise Exception('Unexpected, disposing position not existing')
     return losses
 
