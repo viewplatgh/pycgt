@@ -66,7 +66,7 @@ class Portfolio(dict):
         if crypto_fee_field in tran and tran[crypto_fee_field] > 0:
           volume = tran[crypto_fee_field]
           crypto_fiat_field = '{}{}'.format(tran.left2right[0], DEFAULT_FIAT).lower()
-          disposing_price = tran[crypto_fiat_field] if crypto_fee_field in tran and tran[crypto_fiat_field] > 0 else (fee_fiat / volume)
+          disposing_price = tran[crypto_fiat_field] if crypto_fiat_field in tran and tran[crypto_fiat_field] > 0 else (fee_fiat / volume)
           # go through positions list of the crypto to dispose, from 0 to end
           for item in self[crypto]:
             if item.volume > 0:
