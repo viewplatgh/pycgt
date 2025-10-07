@@ -1,5 +1,5 @@
 import pprint
-from shared_def import FIATS, CRYPTOS, POSITION_ACCOUNTING
+from shared_def import DEFAULT_FIAT, FIATS, CRYPTOS, POSITION_ACCOUNTING
 from gain_loss import GainLoss
 from position import Position
 from transaction import Transaction
@@ -58,13 +58,57 @@ class Portfolio(dict):
         raise Exception('Unexpected, disposing position not existing')
       
       if tran.left2right[1] in FIATS:
-          # dispose crypto for fiat, simply treat fee of fiat as incidental loss
-        if tran['fee_aud'] > 0:
+        # need to deal with fees of disposing crypto for fiat
+        # btw, no need to handle crypto to crypto case, because in that case fee would be added to cost base
+        crypto_fee_field = 'fee_{}'.format(tran.left2right[0].lower()) # assuming the crypto of fee is left of the pair
+        fiat_fee_field = 'fee_{}'.format(DEFAULT_FIAT.lower())
+        fee_fiat = tran[fiat_fee_field] if fiat_fee_field in tran and tran[fiat_fee_field] > 0 else 0
+        if crypto_fee_field in tran and tran[crypto_fee_field] > 0:
+          volume = tran[crypto_fee_field]
+          crypto_fiat_field = '{}{}'.format(tran.left2right[0], DEFAULT_FIAT).lower()
+          disposing_price = tran[crypto_fiat_field] if crypto_fee_field in tran and tran[crypto_fiat_field] > 0 else (fee_fiat / volume)
+          # go through positions list of the crypto to dispose, from 0 to end
+          for item in self[crypto]:
+            if item.volume > 0:
+              gl = GainLoss()
+              gl.transaction = tran
+              # make up a sell(crypto_fee) transaction based on original transaction
+              gl.transaction.volume = tran[crypto_fee_field]
+              gl.transaction[crypto] = tran[crypto_fee_field]
+              gl.transaction[DEFAULT_FIAT.lower()] = fee_fiat
+              gl.transaction[crypto_fee_field] = gl.transaction[fiat_fee_field] = 0
+
+              gl.position = item
+              gl.left_date = item.transaction.datetime
+              gl.right_date = tran.datetime
+              matching = min(item.volume, volume)
+              item.volume -= matching
+              volume -= matching
+              gl.matched = matching
+              gl.aud = (disposing_price - item.price) * matching
+              gains.append(gl) if gl.gain else losses.append(gl)
+              print(gl.brief_csv)
+              # cost base of disposed crypto(fee) is regarded as incidental loss
+              incidental_loss = GainLoss()
+              incidental_loss.description = 'Incidental loss because of fee paid in crypto'
+              incidental_loss.transaction = tran
+              incidental_loss.transaction.volume = tran[crypto_fee_field]
+              incidental_loss.aud = -abs(item.price * matching)
+              incidental_loss.left_date = item.transaction.datetime
+              incidental_loss.right_date = tran.datetime
+              losses.append(incidental_loss)
+              print(incidental_loss.brief_csv)
+              if volume < 0.00000001:
+                break
+          if volume > 0.00000001:
+            raise Exception('Unexpected, disposing position not existing')
+        elif fee_fiat > 0:
+          # simply treat position fee of fiat as incidental loss as no crypto fee information
           incidental_loss = GainLoss()
           incidental_loss.description = 'Incidental loss because of fee paid in fiat'
           incidental_loss.transaction = tran
           incidental_loss.left_date = incidental_loss.right_date = tran.datetime
-          incidental_loss.aud = -abs(tran['fee_aud'])
+          incidental_loss.aud = -abs(fee_fiat)
           losses.append(incidental_loss)
           print(incidental_loss.brief_csv)
 
