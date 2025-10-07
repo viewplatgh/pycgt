@@ -4,7 +4,7 @@ import csv
 import copy
 from transaction import Transaction
 from annual_statement import AnnualStatement
-from shared_def import OPERATIONS, FIELDS
+from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS
 
 from logger import logger
 
@@ -45,8 +45,9 @@ for item in sys.argv[1:]:
           parsed_trans.append(current_trans)
         else:
           continue
-  
-parsed_trans.sort(key=lambda x: x.datetime) # sort by datetime ascending
+
+if SORT_BY_DATETIME_ASC:
+  parsed_trans.sort(key=lambda x: x.datetime)
 for tran in parsed_trans:
   statement = statements_dict.get(tran.financial_year)
   if statement:
