@@ -5,6 +5,7 @@ config = get_config()
 FIATS = config['data']['fiats']
 CRYPTOS = config['data']['cryptos']
 OPERATIONS = config['data']['operations']
+PARSE_DATETIME_FORMATS = config['data']['parse_datetime_formats']
 FIELDS = config['data']['fields']
 PAIR_SPLIT_MAP = config['data']['pair_split_map']
 

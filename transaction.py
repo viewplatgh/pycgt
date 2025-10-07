@@ -3,7 +3,7 @@ import pprint
 import copy
 from datetime import datetime
 from dateutil import parser
-from shared_def import FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP, DEFAULT_FIAT
+from shared_def import FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP, DEFAULT_FIAT, PARSE_DATETIME_FORMATS
 from logger import logger
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
@@ -29,27 +29,20 @@ def datetime_parser(x):
   """ datetime parser """
   if not x:
     return None
-  try:
-    result = datetime.strptime(x, '%m/%d/%Y %H:%M:%S')
-    return result
-  except BaseException as _:
+  
+  for fmt in PARSE_DATETIME_FORMATS:
     try:
-      result = datetime.strptime(x, '%b. %d, %Y, %I:%M %p')
+      result = datetime.strptime(x, fmt)
       return result
     except BaseException as _:
-      try:
-        result = datetime.strptime(x, '%b. %d, %Y, %H:%M %p')
-        return result
-      except BaseException as _:
-        try:
-          result = datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
-          return result
-        except BaseException as _:
-          try:
-            result = parser.parse(x)
-            return result
-          except BaseException as _:
-            raise
+      continue
+  
+  try:
+    result = parser.parse(x)
+    return result
+  except BaseException as _:
+    logger.error(f"Failed to parse datetime '{x}'")
+    raise
 
 
 PARSER_MAP = {
