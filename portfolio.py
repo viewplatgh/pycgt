@@ -93,7 +93,12 @@ class Portfolio(dict):
               incidental_loss.description = 'Incidental loss because of fee paid in crypto'
               incidental_loss.transaction = tran
               incidental_loss.transaction.volume = tran[crypto_fee_field]
-              incidental_loss.aud = -abs(item.price * matching)
+              if gl.gain:
+                # cost base of disposed crypto(fee) is regarded as incidental loss
+                incidental_loss.aud = -abs(item.price * matching)
+              else:
+                # proceed is regarded as incidental loss
+                incidental_loss.aud = -abs(disposing_price * matching)
               incidental_loss.left_date = item.transaction.datetime
               incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
@@ -150,12 +155,17 @@ class Portfolio(dict):
               gl.aud = (disposing_price - item.price) * matching
               gains.append(gl) if gl.gain else losses.append(gl)
               print(gl.brief_csv)
-              # cost base of disposed crypto(fee) is regarded as incidental loss
+
               incidental_loss = GainLoss()
               incidental_loss.description = 'Incidental loss because of fee paid in crypto'
               incidental_loss.transaction = tran
               incidental_loss.transaction.volume = getattr(tran, feefield)
-              incidental_loss.aud = -abs(item.price * matching)
+              if gl.gain:
+                # cost base of disposed crypto(fee) is regarded as incidental loss
+                incidental_loss.aud = -abs(item.price * matching)
+              else:
+                # proceed is regarded as incidental loss
+                incidental_loss.aud = -abs(disposing_price * matching)
               incidental_loss.left_date = item.transaction.datetime
               incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
