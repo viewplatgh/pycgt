@@ -358,15 +358,21 @@ class Transaction(dict):
       raise Exception('Cannot mock sell transaction from buy/sell transaction')
     mocked = copy.deepcopy(tran)
     mocked.operation = 'sell'
-    feecrypto = None
+    fee_crypto = None
     for crypto in CRYPTOS:
-      feecrypto_field = 'fee_{}'.format(crypto)
-      if hasattr(tran, feecrypto_field):
-        volume = getattr(tran, feecrypto_field)
+      crypto_fee_field = 'fee_{}'.format(crypto)
+      if crypto_fee_field in tran:
+        volume = tran[crypto_fee_field]
         if volume > 0:
-          feecrypto = crypto
+          fee_crypto = crypto
+          mocked[fee_crypto] = tran[crypto_fee_field]
+          mocked.volume = tran[crypto_fee_field]
+          mocked[crypto_fee_field] = 0
           break
-    if not feecrypto:
+    if not fee_crypto:
       raise Exception('Cannot find crypto fee in transaction')
-    mocked.pair = '{}{}'.format(feecrypto, DEFAULT_FIAT)
+    mocked.pair = '{}{}'.format(fee_crypto, DEFAULT_FIAT).lower()
+    fiat_fee_field = 'fee_{}'.format(DEFAULT_FIAT.lower())
+    mocked[DEFAULT_FIAT.lower()] = tran[fiat_fee_field] if fiat_fee_field in tran else 0
+    mocked[fiat_fee_field]
     return mocked
