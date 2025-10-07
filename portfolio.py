@@ -131,15 +131,17 @@ class Portfolio(dict):
     and cost base value of the fee is regarded as loss
     return all the (gains, losses) same as process_buy_sell_transaction
     """
-    fee_aud = getattr(tran, 'fee_aud')
+    fiat_fee_field = 'fee_{}'.format(DEFAULT_FIAT.lower())
+    fee_fiat = getattr(tran, fiat_fee_field, 0)
     for crypto in CRYPTOS:
-      feefield = 'fee_{}'.format(crypto.lower())
-      if hasattr(tran, feefield):
-        volume = getattr(tran, feefield)
+      crypto_fee_field = 'fee_{}'.format(crypto.lower())
+      if crypto_fee_field in tran:
+        volume = tran[crypto_fee_field]
         if volume > 0:
           gains = []
           losses = []
-          disposing_price = fee_aud / volume
+          crypto_fiat_field = '{}{}'.format(crypto, DEFAULT_FIAT).lower()
+          disposing_price = tran[crypto_fiat_field] if crypto_fiat_field in tran and tran[crypto_fiat_field] > 0 else (fee_fiat / volume)
           # go through positions list of the crypto to dispose, from 0 to end
           for item in self[crypto]:
             if item.volume > 0:
@@ -159,7 +161,7 @@ class Portfolio(dict):
               incidental_loss = GainLoss()
               incidental_loss.description = 'Incidental loss because of fee paid in crypto'
               incidental_loss.transaction = tran
-              incidental_loss.transaction.volume = getattr(tran, feefield)
+              incidental_loss.transaction.volume = tran[crypto_fee_field]
               if gl.gain:
                 # cost base of disposed crypto(fee) is regarded as incidental loss
                 incidental_loss.aud = -abs(item.price * matching)
@@ -176,11 +178,11 @@ class Portfolio(dict):
             raise Exception('Unexpected, disposing position not existing')
           return gains, losses
     
-    # no fee paid in crypto, just create loss based on fee_aud
+    # no fee paid in crypto, just create loss based on fee_fiat
     incidental_loss = GainLoss()
     incidental_loss.description = 'Incidental loss because of fee paid in fiat'
     incidental_loss.transaction = tran
-    incidental_loss.aud = -abs(fee_aud)
+    incidental_loss.aud = -abs(fee_fiat)
     incidental_loss.left_date = incidental_loss.right_date = tran.datetime
     print(incidental_loss.brief_csv)
     return (None, [incidental_loss])
