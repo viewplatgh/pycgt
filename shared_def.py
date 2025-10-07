@@ -9,5 +9,6 @@ FIELDS = config['data']['fields']
 PAIR_SPLIT_MAP = config['data']['pair_split_map']
 
 POSITION_ACCOUNTING = config['options']['position_accounting']
+SORT_BY_DATETIME_ASC = config['options']['sort_by_datetime_asc']
 DEFAULT_FIAT = config['locale']['fiat']
 FY_START_MONTH = config['locale']['fy_start_month']
