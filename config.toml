@@ -10,6 +10,7 @@ datefmt = "%Y-%m-%d %H:%M:%S"
 [options]
 position_accounting = "filo"
 sort_by_datetime_asc = true
+precision_threshold = 0.00000001
 
 [data]
 fiats = ["usd", "aud"]
