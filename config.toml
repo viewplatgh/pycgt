@@ -15,6 +15,7 @@ sort_by_datetime_asc = true
 fiats = ["usd", "aud"]
 cryptos = ["btc", "ltc", "nmc", "eth"]
 operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
+parse_datetime_formats = ["%m/%d/%Y %H:%M:%S", "%b. %d, %Y, %I:%M %p", "%b. %d, %Y, %H:%M %p", "%Y-%m-%d %H:%M:%S"]
 
 [data.fields]
 "Type" = "_type"
