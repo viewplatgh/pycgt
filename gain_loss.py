@@ -15,7 +15,7 @@ class GainLoss(dict):
 
   @property
   def discountable(self):
-    return (self['aud'] > 0 and (self.right_date - self.left_date).days >= 365)
+    return (self['aud'] > 0 and (self.right_date - self.left_date).days > 365)
 
   @property
   def aud(self):
