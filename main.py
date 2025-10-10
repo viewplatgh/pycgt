@@ -8,6 +8,7 @@ from annual_statement import AnnualStatement
 from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS
 
 from logger import logger
+from utils import generate_default_output_filename
 
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
@@ -103,8 +104,11 @@ Examples:
   # Generate CGT report from pycgt-formatted CSV files:
   python main.py file1.csv file2.csv
 
-  # Transform exchange logs to pycgt format:
+  # Transform exchange logs to pycgt format with explicit output:
   python main.py -t -x bitstamp -o output.csv input.csv
+
+  # Transform with auto-generated output filename:
+  python main.py -t -x bitstamp input.csv
       """)
 
   parser.add_argument('files', nargs='+', metavar='FILE',
@@ -114,7 +118,7 @@ Examples:
   parser.add_argument('-x', '--exchange', type=str, metavar='EXCHANGE',
                       help='Exchange type (e.g., bitstamp) - required with -t')
   parser.add_argument('-o', '--output', type=str, metavar='OUTPUT',
-                      help='Output filename for transformed CSV - required with -t')
+                      help='Output filename for transformed CSV (default: [first-input]-transformed-[random].csv)')
 
   args = parser.parse_args()
 
@@ -122,9 +126,14 @@ Examples:
   if args.transform:
     if not args.exchange:
       parser.error('-t/--transform requires -x/--exchange to be specified')
-    if not args.output:
-      parser.error('-t/--transform requires -o/--output to be specified')
-    transform_logs(args.files, args.exchange, args.output)
+
+    # Generate default output filename if not provided
+    output_file = args.output
+    if not output_file:
+      output_file = generate_default_output_filename(args.files[0])
+      logger.info(f"No output file specified, using default: {output_file}")
+
+    transform_logs(args.files, args.exchange, output_file)
   else:
     # Default mode: CGT report generation
     if args.exchange or args.output:
