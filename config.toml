@@ -14,7 +14,7 @@ precision_threshold = 0.00000001
 
 [data]
 fiats = ["usd", "aud"]
-cryptos = ["btc", "ltc", "nmc", "eth", "bch"]
+cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link"]
 operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
 parse_datetime_formats = ["%m/%d/%Y %H:%M:%S", "%b. %d, %Y, %I:%M %p", "%b. %d, %Y, %H:%M %p", "%Y-%m-%d %H:%M:%S"]
 
@@ -29,6 +29,7 @@ parse_datetime_formats = ["%m/%d/%Y %H:%M:%S", "%b. %d, %Y, %I:%M %p", "%b. %d, 
 "NMC" = "nmc"
 "ETH" = "eth"
 "BCH" = "bch"
+"LINK" = "link"
 "USD" = "usd"
 "AUD" = "aud"
 "Fee(BTC)" = "fee_btc"
@@ -36,6 +37,7 @@ parse_datetime_formats = ["%m/%d/%Y %H:%M:%S", "%b. %d, %Y, %I:%M %p", "%b. %d, 
 "Fee(NMC)" = "fee_nmc"
 "Fee(ETH)" = "fee_eth"
 "Fee(BCH)" = "fee_bch"
+"Fee(LINK)" = "fee_link"
 "Fee(USD)" = "fee_usd"
 "Fee(AUD)" = "fee_aud"
 "BTCAUD" = "btcaud"
@@ -61,3 +63,5 @@ xltczusd = ["ltc", "usd"]
 xxbtzusd = ["btc", "usd"]
 xltcxxbt = ["ltc", "btc"]
 bchusd = ["bch", "usd"]
+linkusd = ["link", "usd"]
+linkaud = ["link", "aud"]

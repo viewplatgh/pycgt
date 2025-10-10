@@ -84,6 +84,7 @@ All settings are centralized in `config.toml`:
 ### Transaction Processing Logic
 
 **Buy/Sell transactions** (portfolio.py:20-125):
+
 - Creates new positions when buying crypto
 - Matches and disposes positions when selling crypto (FILO/FIFO based on config)
 - Calculates gains/losses by comparing disposal proceeds vs cost base
@@ -91,11 +92,13 @@ All settings are centralized in `config.toml`:
 - Handles fees paid in fiat as incidental losses
 
 **Non-buy/sell transactions** (portfolio.py:127-188):
+
 - Withdrawal, deposit, and loss operations
 - Fees paid in crypto trigger disposal events
 - Cost base of disposed crypto fee is treated as incidental loss
 
 **Loss disposals** (portfolio.py:190-212):
+
 - Used for explicit loss recording (e.g., lost wallet, theft)
 - Disposes positions at zero value, crystallizing losses
 
@@ -106,9 +109,9 @@ The application expects CSV files with specific columns. Column names are mapped
 - **Datetime**: When the trade happened (required) - supports multiple formats via config
 - **Operation**: 'Buy', 'Sell', 'Deposit', 'Withdrawal', or 'Loss' (required for processing)
 - **Pair**: Trading pair (e.g., btcusd, btcaud, ethusd) - must exist in `[data.pair_split_map]`
-- **Crypto amounts**: BTC, LTC, NMC, ETH, BCH columns (optional, depending on transaction)
+- **Crypto amounts**: BTC, LTC, NMC, ETH, BCH, LINK columns (optional, depending on transaction)
 - **Fiat amounts**: USD, AUD columns (optional, depending on transaction)
-- **Fee columns**: Fee(BTC), Fee(LTC), Fee(NMC), Fee(ETH), Fee(BCH), Fee(USD), Fee(AUD)
+- **Fee columns**: Fee(BTC), Fee(LTC), Fee(NMC), Fee(ETH), Fee(BCH), Fee(LINK), Fee(USD), Fee(AUD)
 - **Exchange rates**: BTCUSD, BTCAUD, LTCUSD, LTCBTC, NMCUSD, ETHUSD, ETHBTC, BCHUSD, AUDUSD
 - **Optional**: Type, Exchange, Comments
 
@@ -117,7 +120,8 @@ See README.md for complete CSV format specification and example.csv for a workin
 ## Supported Assets
 
 Currently configured to support:
-- **Cryptocurrencies**: BTC, ETH, LTC, NMC, BCH
+
+- **Cryptocurrencies**: BTC, ETH, LTC, NMC, BCH, LINK
 - **Fiat currencies**: USD, AUD
 - **Trading pairs**: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt, bchusd
 
