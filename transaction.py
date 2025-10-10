@@ -55,12 +55,16 @@ PARSER_MAP = {
     'ltc': float_parser,
     'nmc': float_parser,
     'eth': float_parser,
+    'bch': float_parser,
+    'link': float_parser,
     'usd': float_parser,
     'aud': float_parser,
     'fee_btc': float_parser,
     'fee_ltc': float_parser,
     'fee_nmc': float_parser,
     'fee_eth': float_parser,
+    'fee_bch': float_parser,
+    'fee_link': float_parser,
     'fee_usd': float_parser,
     'fee_aud': float_parser,
     'btcaud': float_parser,
@@ -70,6 +74,9 @@ PARSER_MAP = {
     'nmcusd': float_parser,
     'ethusd': float_parser,
     'ethbtc': float_parser,
+    'bchusd': float_parser,
+    'linkusd': float_parser,
+    'linkaud': float_parser,
     'audusd': float_parser,
     'comments': no_parser
 }
@@ -172,6 +179,28 @@ class Transaction(dict):
     self['eth'] = value
 
   @property
+  def bch(self):
+    if 'bch' in self:
+      return self['bch']
+    else:
+      return 0
+
+  @bch.setter
+  def bch(self, value):
+    self['bch'] = value
+
+  @property
+  def link(self):
+    if 'link' in self:
+      return self['link']
+    else:
+      return 0
+
+  @link.setter
+  def link(self, value):
+    self['link'] = value
+
+  @property
   def usd(self):
     return self['usd']
 
@@ -210,6 +239,28 @@ class Transaction(dict):
   @fee_aud.setter
   def fee_aud(self, value):
     self['fee_aud'] = value
+
+  @property
+  def fee_bch(self):
+    if 'fee_bch' in self:
+      return self['fee_bch']
+    else:
+      return 0
+
+  @fee_bch.setter
+  def fee_bch(self, value):
+    self['fee_bch'] = value
+
+  @property
+  def fee_link(self):
+    if 'fee_link' in self:
+      return self['fee_link']
+    else:
+      return 0
+
+  @fee_link.setter
+  def fee_link(self, value):
+    self['fee_link'] = value
 
   @property
   def btcusd(self):
@@ -266,6 +317,39 @@ class Transaction(dict):
   @ethbtc.setter
   def ethbtc(self, value):
     self['ethbtc'] = value
+
+  @property
+  def bchusd(self):
+    if 'bchusd' in self:
+      return self['bchusd']
+    else:
+      return 0
+
+  @bchusd.setter
+  def bchusd(self, value):
+    self['bchusd'] = value
+
+  @property
+  def linkusd(self):
+    if 'linkusd' in self:
+      return self['linkusd']
+    else:
+      return 0
+
+  @linkusd.setter
+  def linkusd(self, value):
+    self['linkusd'] = value
+
+  @property
+  def linkaud(self):
+    if 'linkaud' in self:
+      return self['linkaud']
+    else:
+      return 0
+
+  @linkaud.setter
+  def linkaud(self, value):
+    self['linkaud'] = value
 
   @property
   def audusd(self):
