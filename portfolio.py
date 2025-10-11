@@ -1,5 +1,5 @@
 import pprint
-from shared_def import DEFAULT_FIAT, FIATS, CRYPTOS, POSITION_ACCOUNTING, PRECISION_THRESHOLD
+from shared_def import LOCALE_FIAT, FIATS, CRYPTOS, POSITION_ACCOUNTING, PRECISION_THRESHOLD
 from gain_loss import GainLoss
 from position import Position
 from transaction import Transaction
@@ -61,11 +61,11 @@ class Portfolio(dict):
         # need to deal with fees of disposing crypto for fiat
         # btw, no need to handle crypto to crypto case, because in that case fee would be added to cost base
         crypto_fee_field = 'fee_{}'.format(tran.left2right[0].lower()) # assuming the crypto of fee is left of the pair
-        fiat_fee_field = 'fee_{}'.format(DEFAULT_FIAT.lower())
+        fiat_fee_field = 'fee_{}'.format(LOCALE_FIAT.lower())
         fee_fiat = tran[fiat_fee_field] if fiat_fee_field in tran and tran[fiat_fee_field] > 0 else 0
         if crypto_fee_field in tran and tran[crypto_fee_field] > 0:
           volume = tran[crypto_fee_field]
-          crypto_fiat_field = '{}{}'.format(tran.left2right[0], DEFAULT_FIAT).lower()
+          crypto_fiat_field = '{}{}'.format(tran.left2right[0], LOCALE_FIAT).lower()
           disposing_price = tran[crypto_fiat_field] if crypto_fiat_field in tran and tran[crypto_fiat_field] > 0 else (fee_fiat / volume)
           # go through positions list of the crypto to dispose, from 0 to end
           for item in self[crypto]:
@@ -75,7 +75,7 @@ class Portfolio(dict):
               # make up a sell(crypto_fee) transaction based on original transaction
               gl.transaction.volume = tran[crypto_fee_field]
               gl.transaction[crypto] = tran[crypto_fee_field]
-              gl.transaction[DEFAULT_FIAT.lower()] = fee_fiat
+              gl.transaction[LOCALE_FIAT.lower()] = fee_fiat
               gl.transaction[crypto_fee_field] = gl.transaction[fiat_fee_field] = 0
 
               gl.position = item
@@ -131,7 +131,7 @@ class Portfolio(dict):
     and cost base value of the fee is regarded as loss
     return all the (gains, losses) same as process_buy_sell_transaction
     """
-    fiat_fee_field = 'fee_{}'.format(DEFAULT_FIAT.lower())
+    fiat_fee_field = 'fee_{}'.format(LOCALE_FIAT.lower())
     fee_fiat = getattr(tran, fiat_fee_field, 0)
     for crypto in CRYPTOS:
       crypto_fee_field = 'fee_{}'.format(crypto.lower())
@@ -140,7 +140,7 @@ class Portfolio(dict):
         if volume > 0:
           gains = []
           losses = []
-          crypto_fiat_field = '{}{}'.format(crypto, DEFAULT_FIAT).lower()
+          crypto_fiat_field = '{}{}'.format(crypto, LOCALE_FIAT).lower()
           disposing_price = tran[crypto_fiat_field] if crypto_fiat_field in tran and tran[crypto_fiat_field] > 0 else (fee_fiat / volume)
           # go through positions list of the crypto to dispose, from 0 to end
           for item in self[crypto]:
