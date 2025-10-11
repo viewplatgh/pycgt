@@ -5,7 +5,7 @@ import copy
 import argparse
 from transaction import Transaction
 from annual_statement import AnnualStatement
-from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS
+from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS, LOCALE_FIAT
 
 from logger import logger
 from utils import generate_default_output_filename
@@ -18,12 +18,15 @@ def process_cgt_report(csv_files):
   """Process CSV files and generate CGT reports"""
   statements = []
   statements_dict = {}
+  locale_fiat_lower = LOCALE_FIAT.lower()
   print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
-      'gain_or_loss', 'datetime', 'aud', 'discountable', 'description', 'buy_transaction.aud',
+      'gain_or_loss', 'datetime', locale_fiat_lower, 'discountable', 'description',
+      'buy_transaction.{}'.format(locale_fiat_lower),
       'buy_transaction.volume', 'buy_transaction.datetime',
       'buy_transaction.operation', 'buy_transaction.pair', 'buy_transaction.usd',
-      'position.asset', 'position.aud', 'position.initial_volume',
-      'position.price', 'position.volume', 'matched', 'sell_transaction.aud',
+      'position.asset', 'position.{}'.format(locale_fiat_lower), 'position.initial_volume',
+      'position.price', 'position.volume', 'matched',
+      'sell_transaction.{}'.format(locale_fiat_lower),
       'sell_transaction.volume', 'sell_transaction.datetime',
       'sell_transaction.operation', 'sell_transaction.pair',
       'sell_transaction.usd'))

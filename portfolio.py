@@ -49,7 +49,7 @@ class Portfolio(dict):
           item.volume -= matching
           disposed_volume -= matching
           gl.matched = matching
-          gl.aud = (tran.aud / tran[crypto] - item.price) * matching
+          gl.fiat = (tran.fiat / tran[crypto] - item.price) * matching
           gains.append(gl) if gl.gain else losses.append(gl)
           print(gl.brief_csv)
           if disposed_volume < PRECISION_THRESHOLD:
@@ -85,7 +85,7 @@ class Portfolio(dict):
               item.volume -= matching
               volume -= matching
               gl.matched = matching
-              gl.aud = (disposing_price - item.price) * matching
+              gl.fiat = (disposing_price - item.price) * matching
               gains.append(gl) if gl.gain else losses.append(gl)
               print(gl.brief_csv)
               # cost base of disposed crypto(fee) is regarded as incidental loss
@@ -95,10 +95,10 @@ class Portfolio(dict):
               incidental_loss.transaction.volume = tran[crypto_fee_field]
               if gl.gain:
                 # cost base of disposed crypto(fee) is regarded as incidental loss
-                incidental_loss.aud = -abs(item.price * matching)
+                incidental_loss.fiat = -abs(item.price * matching)
               else:
                 # proceed is regarded as incidental loss
-                incidental_loss.aud = -abs(disposing_price * matching)
+                incidental_loss.fiat = -abs(disposing_price * matching)
               incidental_loss.left_date = item.transaction.datetime
               incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
@@ -113,7 +113,7 @@ class Portfolio(dict):
           incidental_loss.description = 'Incidental loss because of fee paid in fiat'
           incidental_loss.transaction = tran
           incidental_loss.left_date = incidental_loss.right_date = tran.datetime
-          incidental_loss.aud = -abs(fee_fiat)
+          incidental_loss.fiat = -abs(fee_fiat)
           losses.append(incidental_loss)
           print(incidental_loss.brief_csv)
 
@@ -154,7 +154,7 @@ class Portfolio(dict):
               item.volume -= matching
               volume -= matching
               gl.matched = matching
-              gl.aud = (disposing_price - item.price) * matching
+              gl.fiat = (disposing_price - item.price) * matching
               gains.append(gl) if gl.gain else losses.append(gl)
               print(gl.brief_csv)
 
@@ -164,10 +164,10 @@ class Portfolio(dict):
               incidental_loss.transaction.volume = tran[crypto_fee_field]
               if gl.gain:
                 # cost base of disposed crypto(fee) is regarded as incidental loss
-                incidental_loss.aud = -abs(item.price * matching)
+                incidental_loss.fiat = -abs(item.price * matching)
               else:
                 # proceed is regarded as incidental loss
-                incidental_loss.aud = -abs(disposing_price * matching)
+                incidental_loss.fiat = -abs(disposing_price * matching)
               incidental_loss.left_date = item.transaction.datetime
               incidental_loss.right_date = tran.datetime
               losses.append(incidental_loss)
@@ -182,7 +182,7 @@ class Portfolio(dict):
     incidental_loss = GainLoss()
     incidental_loss.description = 'Incidental loss because of fee paid in fiat'
     incidental_loss.transaction = tran
-    incidental_loss.aud = -abs(fee_fiat)
+    incidental_loss.fiat = -abs(fee_fiat)
     incidental_loss.left_date = incidental_loss.right_date = tran.datetime
     print(incidental_loss.brief_csv)
     return (None, [incidental_loss])
@@ -202,7 +202,7 @@ class Portfolio(dict):
         item.volume -= matching
         disposed_volume -= matching
         gl.matched = matching
-        gl.aud = -matching * item.price
+        gl.fiat = -matching * item.price
         losses.append(gl)
         print(gl.brief_csv)
         if disposed_volume < PRECISION_THRESHOLD:

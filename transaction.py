@@ -58,7 +58,7 @@ PARSER_MAP = {
     'bch': float_parser,
     'link': float_parser,
     'usd': float_parser,
-    'aud': float_parser,
+    LOCALE_FIAT.lower(): float_parser,
     'fee_btc': float_parser,
     'fee_ltc': float_parser,
     'fee_nmc': float_parser,
@@ -215,6 +215,15 @@ class Transaction(dict):
   @aud.setter
   def aud(self, value):
     self['aud'] = value
+
+  @property
+  def fiat(self):
+    """Returns the fiat amount based on LOCALE_FIAT configuration"""
+    return self[LOCALE_FIAT.lower()]
+
+  @fiat.setter
+  def fiat(self, value):
+    self[LOCALE_FIAT.lower()] = value
 
   @property
   def fee_btc(self):
@@ -393,7 +402,7 @@ class Transaction(dict):
     else:
       return self.datetime.year + 1
     
-  BRIEF_KEYS = ['datetime', 'operation', 'pair', 'aud', 'usd', 'volume']
+  BRIEF_KEYS = ['datetime', 'operation', 'pair', LOCALE_FIAT.lower(), 'usd', 'volume']
 
   @property
   def brief(self):

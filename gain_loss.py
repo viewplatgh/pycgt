@@ -1,12 +1,12 @@
 import copy
-from datetime import datetime
 from position import Position
 from transaction import Transaction
+from shared_def import LOCALE_FIAT
 
 class GainLoss(dict):
   def __init__(self):
     super(GainLoss, self).__init__()
-    self.aud = 0
+    self.fiat = 0
     self.left_date = self.right_date = None
     self.position = None
     self.transaction = None
@@ -15,20 +15,20 @@ class GainLoss(dict):
 
   @property
   def discountable(self):
-    return (self['aud'] > 0 and (self.right_date - self.left_date).days > 365)
+    return (self.fiat > 0 and (self.right_date - self.left_date).days > 365)
 
   @property
-  def aud(self):
-    """ Gain or loss amount in AUD """
-    return self['aud']
+  def fiat(self):
+    """ Gain or loss amount in local fiat currency """
+    return self['fiat']
 
-  @aud.setter
-  def aud(self, value):
-    self['aud'] = value
+  @fiat.setter
+  def fiat(self, value):
+    self['fiat'] = value
 
   @property
   def gain(self):
-    return self.aud >= 0
+    return self.fiat >= 0
 
   @property
   def transaction(self):
@@ -80,8 +80,9 @@ class GainLoss(dict):
 
   @property
   def brief(self):
+    locale_fiat_lower = LOCALE_FIAT.lower()
     return dict(
-        aud=self.aud,
+        **{locale_fiat_lower: self.fiat},
         position=self.position.brief,
         buy_transaction=self.position.transaction.brief,
         sell_transaction=self.transaction.brief)
@@ -91,26 +92,27 @@ class GainLoss(dict):
     position = self.position.brief if self.position else Position.create_na_brief()
     buy_transaction = self.position.transaction.brief if self.position else Transaction.create_na_brief()
     sell_transaction = self.transaction.brief if self.transaction else Transaction.create_na_brief()
+    locale_fiat_lower = LOCALE_FIAT.lower()
     row = [
         '{}'.format('gain' if self.gain else 'loss'),  # gain_or_loss
         '{}'.format(self.right_date), # datetime
-        '{}'.format(self.aud),  # aud
+        '{}'.format(self.fiat),  # fiat amount
         '{}'.format('Yes' if self.discountable else 'No' if self.
                     gain else 'N/A'),  # discountable
         '{}'.format(self.description),  # description
-        '{}'.format(buy_transaction['aud']),  # buy_transaction.aud
+        '{}'.format(buy_transaction.get(locale_fiat_lower, 'N/A')),  # buy_transaction.fiat
         '{}'.format(buy_transaction['volume']),  # buy_transaction.volume
         '{}'.format(buy_transaction['datetime']),  # buy_transaction.datetime
         '{}'.format(buy_transaction['operation']),  # buy_transaction.operation
         '{}'.format(buy_transaction['pair']),  # buy_transaction.pair
         '{}'.format(buy_transaction['usd']),  # buy_transaction.usd
         '{}'.format(position['asset']),  # position.asset
-        '{}'.format(position['aud']),  # position.aud
+        '{}'.format(position.get(locale_fiat_lower, 'N/A')),  # position.fiat (uses locale-specific key)
         '{}'.format(position['initial_volume']),  # position.initial_volume
         '{}'.format(position['price']),  # position.price
         '{}'.format(position['volume']),  # position.volume
         '{}'.format(self.matched),  # matched
-        '{}'.format(sell_transaction['aud']),  # sell_transaction.aud
+        '{}'.format(sell_transaction.get(locale_fiat_lower, 'N/A')),  # sell_transaction.fiat
         '{}'.format(sell_transaction['volume']),  # sell_transaction.volume
         '{}'.format(sell_transaction['datetime']),  # sell_transaction.datetime
         '{}'.format(
