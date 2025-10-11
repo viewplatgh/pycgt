@@ -3,7 +3,7 @@ import pprint
 import copy
 from datetime import datetime
 from dateutil import parser
-from shared_def import FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP, DEFAULT_FIAT, PARSE_DATETIME_FORMATS
+from shared_def import FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP, LOCALE_FIAT, PARSE_DATETIME_FORMATS
 from logger import logger
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
@@ -455,8 +455,8 @@ class Transaction(dict):
           break
     if not fee_crypto:
       raise Exception('Cannot find crypto fee in transaction')
-    mocked.pair = '{}{}'.format(fee_crypto, DEFAULT_FIAT).lower()
-    fiat_fee_field = 'fee_{}'.format(DEFAULT_FIAT.lower())
-    mocked[DEFAULT_FIAT.lower()] = tran[fiat_fee_field] if fiat_fee_field in tran else 0
+    mocked.pair = '{}{}'.format(fee_crypto, LOCALE_FIAT).lower()
+    fiat_fee_field = 'fee_{}'.format(LOCALE_FIAT.lower())
+    mocked[LOCALE_FIAT.lower()] = tran[fiat_fee_field] if fiat_fee_field in tran else 0
     mocked[fiat_fee_field]
     return mocked
