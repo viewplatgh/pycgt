@@ -1,4 +1,5 @@
 import copy
+from shared_def import LOCALE_FIAT
 
 
 class Position(dict):
@@ -6,12 +7,16 @@ class Position(dict):
     super(Position, self).__init__()
     self.transaction = copy.deepcopy(transaction) # backup initial transaction for brief
     self.asset = self.transaction.left2right[1]
-    self.aud = self.transaction.aud + self.transaction.fee_aud # include fee in cost base
+    # Use LOCALE_FIAT to get fiat field dynamically
+    locale_fiat_lower = LOCALE_FIAT.lower()
+    fee_field = 'fee_{}'.format(locale_fiat_lower)
+    fiat_amount = self.transaction[locale_fiat_lower] + self.transaction[fee_field] # include fee in cost base
+    self.fiat = fiat_amount
     self.volume = self.transaction[self.asset]
     if self.volume == 0:
       raise AssertionError('Zero volume is not valid')
     self['initial_volume'] = self.volume # backup initial volume
-    self.price = self.aud / self.volume # cost price
+    self.price = fiat_amount / self.volume # cost price
 
   @property
   def asset(self):
@@ -30,12 +35,13 @@ class Position(dict):
     self['transaction'] = copy.deepcopy(value)
 
   @property
-  def aud(self):
-    return self['aud']
+  def fiat(self):
+    """Returns the fiat amount based on LOCALE_FIAT configuration"""
+    return self[LOCALE_FIAT.lower()]
 
-  @aud.setter
-  def aud(self, value):
-    self['aud'] = value
+  @fiat.setter
+  def fiat(self, value):
+    self[LOCALE_FIAT.lower()] = value
 
   @property
   def volume(self):
@@ -57,7 +63,7 @@ class Position(dict):
   def initial_volume(self):
     return self['initial_volume']
 
-  BRIEF_KEYS = ['asset', 'aud', 'volume', 'price', 'initial_volume']
+  BRIEF_KEYS = ['asset', LOCALE_FIAT.lower(), 'volume', 'price', 'initial_volume']
 
   @property
   def brief(self):
@@ -67,7 +73,7 @@ class Position(dict):
             for my_key in
             Position.BRIEF_KEYS
         })
-  
+
   @staticmethod
   def create_na_brief():
     return dict(

@@ -1,5 +1,5 @@
 import pprint
-from shared_def import CRYPTOS
+from shared_def import CRYPTOS, LOCALE_FIAT
 from portfolio import Portfolio
 from gain_loss import GainLoss
 
@@ -88,9 +88,10 @@ class AnnualStatement(dict):
             self.losses.extend(self.portfolio.dispose_as_loss(crypto, tran))
             break
       else:
-        # Arbitrary AUD loss
+        # Arbitrary locale fiat loss
         loss = GainLoss()
-        loss.aud = -abs(tran.aud)
+        locale_fiat_lower = LOCALE_FIAT.lower()
+        loss.fiat = -abs(tran[locale_fiat_lower])
         loss.description = 'Arbitrary loss because of: ' + tran.comments
         loss.left_date = loss.right_date = tran.datetime
         print(loss.brief_csv)
@@ -100,15 +101,15 @@ class AnnualStatement(dict):
 
   @property
   def gross_gains_sum(self):
-    return sum([item.aud for item in self.gains], 0)
+    return sum([item.fiat for item in self.gains], 0)
 
   @property
   def non_discountable_gains_sum(self):
-    return sum([item.aud for item in self.gains if not item.discountable], 0)
+    return sum([item.fiat for item in self.gains if not item.discountable], 0)
 
   @property
   def discountable_gains_sum(self):
-    return sum([item.aud for item in self.gains if item.discountable], 0)
+    return sum([item.fiat for item in self.gains if item.discountable], 0)
 
   @property
   def taxable_gains_sum(self):
@@ -116,12 +117,12 @@ class AnnualStatement(dict):
 
   @property
   def this_year_losses(self):
-    return self.losses_sum - (self.previous_year_loss.aud
+    return self.losses_sum - (self.previous_year_loss.fiat
                               if self.previous_year_loss else 0)
 
   @property
   def losses_sum(self):
-    return sum([item.aud for item in self.losses], 0)
+    return sum([item.fiat for item in self.losses], 0)
 
   @property
   def net_gain(self):
@@ -131,29 +132,30 @@ class AnnualStatement(dict):
   def carried_losses(self):
     if self.net_gain < 0:
       gl = GainLoss()
-      gl.aud = self.net_gain
+      gl.fiat = self.net_gain
       return [gl]
     else:
       return None
 
   def report(self):
+    fiat_currency = LOCALE_FIAT.upper()
     print('========================================================')
     print('Tax return report for year: {}'.format(self.financial_year))
-    print('Gross gains of the year: ${:.2f} AUD'.format(self.gross_gains_sum))
-    print('Discountable gains of the year: ${:.2f} AUD'.format(
-        self.discountable_gains_sum))
-    print('Non-discountable gains of the year: ${:.2f} AUD'.format(
-        self.non_discountable_gains_sum))
-    print('Taxable gains of the year: ${:.2f} AUD'.format(
-        self.taxable_gains_sum))
-    print('Losses carried from previous year: - ${:.2f} AUD'.format(
-        abs(self.previous_year_loss.aud if self.previous_year_loss else 0)))
-    print('Losses of this year only: - ${:.2f} AUD'.format(
-        abs(self.this_year_losses)))
-    print('Total losses at the end of the year: - ${:.2f} AUD'.format(
-        abs(self.losses_sum)))
-    print('Net gains of the year: {} ${:.2f} AUD'.format(
-        '-' if self.net_gain < 0 else '', abs(self.net_gain)))
+    print('Gross gains of the year: ${:.2f} {}'.format(self.gross_gains_sum, fiat_currency))
+    print('Discountable gains of the year: ${:.2f} {}'.format(
+        self.discountable_gains_sum, fiat_currency))
+    print('Non-discountable gains of the year: ${:.2f} {}'.format(
+        self.non_discountable_gains_sum, fiat_currency))
+    print('Taxable gains of the year: ${:.2f} {}'.format(
+        self.taxable_gains_sum, fiat_currency))
+    print('Losses carried from previous year: - ${:.2f} {}'.format(
+        abs(self.previous_year_loss.fiat if self.previous_year_loss else 0), fiat_currency))
+    print('Losses of this year only: - ${:.2f} {}'.format(
+        abs(self.this_year_losses), fiat_currency))
+    print('Total losses at the end of the year: - ${:.2f} {}'.format(
+        abs(self.losses_sum), fiat_currency))
+    print('Net gains of the year: {} ${:.2f} {}'.format(
+        '-' if self.net_gain < 0 else '', abs(self.net_gain), fiat_currency))
     print('Portfolio of the year:')
     for crypto in CRYPTOS:
       if crypto in self.portfolio:
