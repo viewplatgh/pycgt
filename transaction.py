@@ -58,7 +58,6 @@ PARSER_MAP = {
     'bch': float_parser,
     'link': float_parser,
     'usd': float_parser,
-    LOCALE_FIAT.lower(): float_parser,
     'fee_btc': float_parser,
     'fee_ltc': float_parser,
     'fee_nmc': float_parser,
@@ -78,10 +77,11 @@ PARSER_MAP = {
     'linkusd': float_parser,
     'linkaud': float_parser,
     'audusd': float_parser,
-    'comments': no_parser
+    'comments': no_parser,
 }
 
-
+if LOCALE_FIAT.lower() not in PARSER_MAP:
+    PARSER_MAP[LOCALE_FIAT.lower()] = float_parser
 
 class Transaction(dict):
   def __init__(self):
