@@ -1,139 +1,198 @@
 # pycgt
 
-A capital gain tax calculator for crypto traders or investors. This is just a toy script, not a mature product. Please notice following known limits of it:
+A capital gain tax calculator for crypto traders or investors with configurable locale support. While originally designed for Australian tax returns, it supports any fiat currency through configuration.
 
-- cannot process raw logs from any exchanges, you need to transform your trading logs into pycgt's format before using it
-- limited currency types
-  - supported cryptos: BTC, ETH, LTC, NMC
-  - supported fiats: USD, AUD
-- limited trading pairs
-  - supported pairs: btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt
-- designed for Australian tax return, e.g. assuming financial year end between June and July
+## Features
 
-## trading logs pycgt can process
+- **Locale-aware calculations**: Configure your local fiat currency (AUD, USD, etc.) for cost basis and reporting
+- **Flexible accounting**: Supports both FILO (Last-In-First-Out) and FIFO (First-In-First-Out) position matching
+- **Exchange log transformation**: Built-in transformer for Bitstamp exports, extensible for other exchanges
+- **Comprehensive fee handling**: Crypto fees trigger disposal events; fiat fees treated as incidental losses
+- **Australian tax compliance**: CGT discount for assets held >12 months, configurable fiscal year
 
-A csv file with following column:
+## Known Limitations
 
-- Type
-  - optional, transaction type
-- Exchange
-  - optional, the exchange where the trade was made
-- Datetime
-  - important, when the trade happened
-- Operation
-  - important, either 'Buy' or 'Sell' if it's a trading transaction
-- Pair
-  - important, one of "btcusd, btcaud, ltcusd, nmcusd, xethxxbt, xethzusd, ethusd, xltczusd, xxbtzusd, xltcxxbt"
-- BTC
-  - optional, the BTC amount issued with the trade
-- LTC
-  - optional, the LTC amount issued with the trade
-- NMC
-  - optional, the NMC amount issued with the trade
-- USD
-  - the USD amount issued with the trade
-- AUD
-  - the AUD amount issued with the trade
-- Fee(BTC)
-  - optional, fees paid in BTC
-- Fee(LTC)
-  - optional, fees paid in LTC
-- Fee(NMC)
-  - optional, fees paid in NMC
-- Fee(USD)
-  - optional, fees paid in USD
-- Fee(AUD)
-  - optional, fees paid in USD
-- BTCAUD
-  - optional, BTCAUD exchange rate at "Datetime"
-- BTCUSD
-  - optional, BTCUSD exchange rate at "Datetime"
-- LTCUSD
-  - optional, LTCUSD exchange rate at "Datetime"
-- NMCUSD
-  - optional, NMCUSD exchange rate at "Datetime"
-- AUDUSD
-  - optional, AUDUSD exchange rate at "Datetime"
-- Comments
-  - optional, just any comments
+- Exchange transformer support is limited (currently only Bitstamp; manual transformation required for other exchanges)
+- No automated market data fetching for missing exchange rates
+- Limited to assets defined in config.toml:
+  - **Supported cryptos**: BTC, ETH, LTC, NMC, BCH, LINK
+  - **Supported fiats**: USD, AUD
+  - **Supported pairs**: btcusd, btcaud, ltcusd, ltcbtc, nmcusd, ethusd, ethbtc, bchusd, linkusd, linkaud, audusd, and Kraken-style pairs (xethxxbt, xethzusd, etc.)
 
-A csv example (see example.csv):
+## Configuration
+
+All settings are in `config.toml`:
+
+```toml
+[locale]
+fiat = "aud"           # Local fiat currency (aud, usd, etc.)
+fy_start_month = 7     # Fiscal year start month (7 = July for Australian tax)
+
+[options]
+position_accounting = "filo"     # "filo" or "fifo"
+sort_by_datetime_asc = true
+precision_threshold = 0.00000001
+
+[data]
+cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link"]
+fiats = ["usd", "aud"]
+operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
+# ... see config.toml for full configuration
+```
+
+**Important**: The `locale.fiat` setting determines which currency is used for all cost basis calculations and tax reporting.
+
+## Trading Logs pycgt Can Process
+
+pycgt expects CSV files with specific columns. Column names are configurable via `[data.fields]` in config.toml:
+
+**Required columns:**
+- **Datetime**: When the trade happened (multiple formats supported)
+- **Operation**: 'Buy', 'Sell', 'Deposit', 'Withdrawal', or 'Loss'
+
+**Optional columns:**
+- **Type**: Transaction type description
+- **Exchange**: The exchange where the trade was made
+- **Pair**: Trading pair (e.g., btcusd, btcaud, ethusd)
+- **Crypto amounts**: BTC, LTC, NMC, ETH, BCH, LINK
+- **Fiat amounts**: USD, AUD
+- **Fee columns**: Fee(BTC), Fee(LTC), Fee(NMC), Fee(ETH), Fee(BCH), Fee(LINK), Fee(USD), Fee(AUD)
+- **Exchange rates**: BTCUSD, BTCAUD, LTCUSD, LTCBTC, NMCUSD, ETHUSD, ETHBTC, BCHUSD, LINKUSD, LINKAUD, AUDUSD
+- **Comments**: Any notes about the transaction
+
+CSV example (see example.csv):
 
 ```csv
-Type,Exchange,Datetime,Operation,Pair,BTC,LTC,USD,AUD,Fee(BTC),Fee(LTC),Fee(USD),Fee(AUD),BTCUSD,LTCUSD,LTCBTC,AUDUSD,Comments
-Market,Coinbase,"2015-12-12T09:11:00.711Z",Buy,BTCUSD,1,,,420,525,,,1.61,1.99,420,,,0.8,
-Market,Coinbase,"2017-07-07T13:40:11.735Z",Sell,BTCUSD,1,,,1838.53,2298.1625,,,4.71,6.05,1838.53,,,0.8,
+Type,Exchange,Datetime,Operation,Pair,BTC,LTC,NMC,ETH,BCH,LINK,USD,AUD,Fee(BTC),Fee(LTC),Fee(NMC),Fee(ETH),Fee(BCH),Fee(LINK),Fee(USD),Fee(AUD),BTCAUD,BTCUSD,LTCUSD,LTCBTC,NMCUSD,ETHUSD,ETHBTC,BCHUSD,LINKUSD,LINKAUD,AUDUSD,Comments
+Market,Coinbase,"2024-03-14T09:11:00.711Z",Buy,BTCAUD,1,,,,,,,,108524.67,,,,,,,108.52467,108633.19467,,,,,,,,,,,
+Market,Coinbase,"2025-06-30T13:40:11.735Z",Sell,BTCAUD,0.998,,,,,,,162387.8306,,,,,,,,162.87646,162713.15,,,,,,,,,,,,
 ```
 
-## How to run it
+## How to Run
 
-python3 is required, using virtualenv is recommended
+Python 3 is required. Using virtualenv is recommended.
 
-### 1. Prepare python environment
+### 1. Prepare Python Environment
 
 ```sh
-python3.x -m venv .virtualenv       # install virtualenv
-source .virtualenv/bin/activate     # activate virtualenv
-pip install --upgrade pip           # upgrade pip
-pip install -r requirements.txt     # install required packages
+python3 -m venv .virtualenv       # Create virtualenv
+source .virtualenv/bin/activate   # Activate virtualenv
+pip install --upgrade pip         # Upgrade pip
+pip install -r requirements.txt   # Install dependencies
 ```
 
-### 2. Run command to generate tax return statements and reports
+### 2. Generate CGT Reports (Default Mode)
+
+Process pycgt-formatted CSV files:
 
 ```sh
-python main.py [csv files] # multiple csv files are supported, use space to seperate them
+python main.py [csv_files...]
 ```
 
 Example:
 
 ```sh
 python main.py example.csv
+python main.py file1.csv file2.csv  # Multiple files supported
 ```
 
-if everything is ok, the output would be:
+### 3. Transform Exchange Logs (Transform Mode)
+
+Convert exchange exports to pycgt format:
+
+```sh
+python main.py -t -x EXCHANGE [-o OUTPUT] INPUT_FILES...
+```
+
+Example:
+
+```sh
+# Transform Bitstamp export
+python main.py -t -x bitstamp Bitstamp-Export.csv
+
+# Custom output filename
+python main.py -t -x bitstamp -o converted.csv Bitstamp-Export.csv
+```
+
+Supported exchanges: `bitstamp`
+
+## Example Output
+
+When processing example.csv with `fiat = "aud"` in config.toml:
 
 ```log
-gain_or_loss,datetime,aud,discountable,description,buy_transaction.aud,buy_transaction.volume,buy_transaction.datetime,buy_transaction.operation,buy_transaction.pair,buy_transaction.usd,position.asset,position.aud,position.initial_volume,position.price,position.volume,matched,sell_transaction.aud,sell_transaction.volume,sell_transaction.datetime,sell_transaction.operation,sell_transaction.pair,sell_transaction.usd
-loss,2024-09-07 09:11:00.711000+00:00,-27.46421467,N/A,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,buy,btcaud,0.0,btc,108633.19467,1.0,108633.19467,1.0,0.001,0.0,0.999,2024-09-07 09:11:00.711000+00:00,sell,btcaud,0.0
-loss,2024-09-07 09:11:00.711000+00:00,-108.63319467,N/A,Incidental loss because of fee paid in crypto,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0,0.0,0.001,2024-09-07 09:11:00.711000+00:00,withdrawal,,0.0
-gain,2025-03-15 09:11:00.711000+00:00,24.652365330000002,Yes,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,buy,btcaud,0.0,btc,108633.19467,1.0,108633.19467,0.999,0.001,0.0,0.998,2025-03-15 09:11:00.711000+00:00,sell,btcaud,0.0
-loss,2025-03-15 09:11:00.711000+00:00,-108.63319467,N/A,Incidental loss because of fee paid in crypto,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0,0.0,0.001,2025-03-15 09:11:00.711000+00:00,withdrawal,,0.0
-gain,2025-06-30 13:40:11.735000+00:00,54080.53551400998,Yes,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,buy,btcaud,0.0,btc,108633.19467,1.0,108633.19467,0.998,0.997,162387.8306,0.997,2025-06-30 13:40:11.735000+00:00,sell,btcaud,0.0
-loss,2025-06-30 13:40:11.735000+00:00,-162.87646,N/A,Incidental loss because of fee paid in fiat,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0,162387.8306,0.997,2025-06-30 13:40:11.735000+00:00,sell,btcaud,0.0
+gain_or_loss,datetime,aud,discountable,description,buy_transaction.aud,buy_transaction.volume,...
+loss,2024-09-07 09:11:00.711000+00:00,-27.46,N/A,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,...
+gain,2025-03-15 09:11:00.711000+00:00,24.65,Yes,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,...
+gain,2025-06-30 13:40:11.735000+00:00,54080.54,Yes,,108524.67,1.0,2024-03-14 09:11:00.711000+00:00,...
 ========================================================
 Tax return report for year: 2024
 Gross gains of the year: $0.00 AUD
-Discountable gains of the year: $0.00 AUD
-Non-discountable gains of the year: $0.00 AUD
 Taxable gains of the year: $0.00 AUD
-Losses carried from previous year: - $0.00 AUD
-Losses of this year only: - $0.00 AUD
-Total losses at the end of the year: - $0.00 AUD
 Net gains of the year:  $0.00 AUD
 Portfolio of the year:
   btc: 1.0
   ltc: 0
   nmc: 0
   eth: 0
+  bch: 0
+  link: 0
 ========================================================
 
 ========================================================
 Tax return report for year: 2025
-Gross gains of the year: $54105.19 AUD
-Discountable gains of the year: $54105.19 AUD
-Non-discountable gains of the year: $0.00 AUD
-Taxable gains of the year: $27052.59 AUD
-Losses carried from previous year: - $0.00 AUD
-Losses of this year only: - $407.61 AUD
-Total losses at the end of the year: - $407.61 AUD
-Net gains of the year:  $26644.99 AUD
+Gross gains of the year: $54159.43 AUD
+Discountable gains of the year: $54159.43 AUD
+Taxable gains of the year: $27079.72 AUD
+Net gains of the year:  $26753.82 AUD
 Portfolio of the year:
-  btc: 0.0010000000000000009
+  btc: 8.67e-19
   ltc: 0
-  nmc: 0
-  eth: 0
+  ...
 ========================================================
 ```
+
+**Note**: The currency label (AUD) in the output adapts based on the `locale.fiat` setting in config.toml. If you set `fiat = "usd"`, all outputs will show USD instead.
+
+## Extending pycgt
+
+### Adding New Cryptocurrencies
+
+To add support for a new cryptocurrency:
+
+1. Update `config.toml`:
+   ```toml
+   [data]
+   cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link", "your_coin"]
+   ```
+
+2. Add field mappings:
+   ```toml
+   [data.fields]
+   "YOUR_COIN" = "your_coin"
+   "Fee(YOUR_COIN)" = "fee_your_coin"
+   ```
+
+3. Add trading pairs:
+   ```toml
+   [data.pair_split_map]
+   your_coinusd = ["your_coin", "usd"]
+   your_coinaud = ["your_coin", "aud"]
+   ```
+
+### Adding Exchange Transformers
+
+To add support for a new exchange:
+
+1. Create `transformer/your_exchange_transformer.py` inheriting from `BaseTransformer`
+2. Implement the `transform()` method to convert the exchange's CSV format
+3. Register it in `transformer/__init__.py`:
+   ```python
+   elif exchange_type == 'your_exchange':
+       return YourExchangeTransformer(input_files, output_file)
+   ```
+
+See `transformer/bitstamp_transformer.py` for reference implementation.
 
 ## License
 
