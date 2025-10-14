@@ -210,13 +210,3 @@ class Portfolio(dict):
     if disposed_volume > PRECISION_THRESHOLD:
       raise Exception('Unexpected, disposing position not existing')
     return losses
-
-# following code looks unnecessary, commmented out for now
-# def _dict_set(dt, key, value):
-#   dt[key] = value
-
-# for item in CRYPTOS:
-#   setattr(
-#       Portfolio, item, lambda key: property(
-#           lambda self: self[key], lambda self, value: _dict_set(
-#               self, key, value))(item))
