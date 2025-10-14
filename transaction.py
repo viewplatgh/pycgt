@@ -3,7 +3,10 @@ import pprint
 import copy
 from datetime import datetime
 from dateutil import parser
-from shared_def import FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP, LOCALE_FIAT, PARSE_DATETIME_FORMATS
+from shared_def import (
+    FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP,
+    LOCALE_FIAT, PARSE_DATETIME_FORMATS, FIELDS
+)
 from logger import logger
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
@@ -29,14 +32,14 @@ def datetime_parser(x):
   """ datetime parser """
   if not x:
     return None
-  
+
   for fmt in PARSE_DATETIME_FORMATS:
     try:
       result = datetime.strptime(x, fmt)
       return result
     except BaseException as _:
       continue
-  
+
   try:
     result = parser.parse(x)
     return result
@@ -45,50 +48,34 @@ def datetime_parser(x):
     raise
 
 
+# [data.fields] configured fields parsers
 PARSER_MAP = {
     '_type': no_parser,
     'exchange': no_parser,
     'datetime': datetime_parser,
     'operation': lambda x: str(x).lower(),
     'pair': lambda x: str(x).lower(),
-    'btc': float_parser,
-    'ltc': float_parser,
-    'nmc': float_parser,
-    'eth': float_parser,
-    'bch': float_parser,
-    'link': float_parser,
-    'usd': float_parser,
-    'fee_btc': float_parser,
-    'fee_ltc': float_parser,
-    'fee_nmc': float_parser,
-    'fee_eth': float_parser,
-    'fee_bch': float_parser,
-    'fee_link': float_parser,
-    'fee_usd': float_parser,
-    'fee_aud': float_parser,
-    'btcaud': float_parser,
-    'btcusd': float_parser,
-    'ltcusd': float_parser,
-    'ltcbtc': float_parser,
-    'nmcusd': float_parser,
-    'ethusd': float_parser,
-    'ethbtc': float_parser,
-    'bchusd': float_parser,
-    'linkusd': float_parser,
-    'linkaud': float_parser,
-    'audusd': float_parser,
     'comments': no_parser,
 }
 
-if LOCALE_FIAT.lower() not in PARSER_MAP:
-    PARSER_MAP[LOCALE_FIAT.lower()] = float_parser
+def _add_crypto_fiat_parsers():
+  """
+  Add float_parser for all crypto/fiat fields from FIELDS.
+  Any field not already in PARSER_MAP is assumed to be a numeric field.
+  """
+  for field_value in FIELDS.values():
+    if field_value not in PARSER_MAP:
+      PARSER_MAP[field_value] = float_parser
+
+_add_crypto_fiat_parsers()
+
 
 class Transaction(dict):
   def __init__(self):
     super(Transaction, self).__init__()
     for key, value in PARSER_MAP.items():
       self[key] = value('')
-    self.volume = None
+    self['volume'] = None
 
   @classmethod
   def createFrom(cls, attrs, values):
@@ -98,123 +85,28 @@ class Transaction(dict):
     for item in zipped:
       if item[0] in PARSER_MAP:
         trans[item[0]] = PARSER_MAP[item[0]](item[1])
-    
+
     if trans.datetime is None:
       raise Exception('Missing datetime in transaction: {}'.format(pp.pformat(trans)))
     return trans
 
-  @property
-  def _type(self):
-    return self['_type']
+  def __getattr__(self, name):
+    """
+    Dynamically provide property access to all fields.
+    """
+    if name in FIELDS.values() or name == 'volume':
+      return self[name]
+    
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
-  @_type.setter
-  def _type(self, value):
-    self['_type'] = value
-
-  @property
-  def exchange(self):
-    return self['exchange']
-
-  @exchange.setter
-  def exchange(self, value):
-    self['exchange'] = value
-
-  @property
-  def datetime(self):
-    return self['datetime']
-
-  @datetime.setter
-  def datetime(self, value):
-    self['datetime'] = value
-
-  @property
-  def operation(self):
-    return self['operation']
-
-  @operation.setter
-  def operation(self, value):
-    self['operation'] = value
-
-  @property
-  def pair(self):
-    return self['pair']
-
-  @pair.setter
-  def pair(self, value):
-    self['pair'] = value
-
-  @property
-  def btc(self):
-    return self['btc']
-
-  @btc.setter
-  def btc(self, value):
-    self['btc'] = value
-
-  @property
-  def ltc(self):
-    return self['ltc']
-
-  @ltc.setter
-  def ltc(self, value):
-    self['ltc'] = value
-
-  @property
-  def nmc(self):
-    return self['nmc']
-
-  @nmc.setter
-  def nmc(self, value):
-    self['nmc'] = value
-
-  @property
-  def eth(self):
-    if 'eth' in self:
-      return self['eth']
+  def __setattr__(self, name, value):
+    """
+    Dynamically provide property setters for all fields.
+    """
+    if name in FIELDS.values() or name == 'volume':
+      self[name] = value
     else:
-      return 0
-
-  @eth.setter
-  def eth(self, value):
-    self['eth'] = value
-
-  @property
-  def bch(self):
-    if 'bch' in self:
-      return self['bch']
-    else:
-      return 0
-
-  @bch.setter
-  def bch(self, value):
-    self['bch'] = value
-
-  @property
-  def link(self):
-    if 'link' in self:
-      return self['link']
-    else:
-      return 0
-
-  @link.setter
-  def link(self, value):
-    self['link'] = value
-
-  @property
-  def usd(self):
-    return self['usd']
-
-  @usd.setter
-  def usd(self, value):
-    self['usd'] = value
-
-  @property
-  def aud(self):
-    return self['aud']
-
-  @aud.setter
-  def aud(self, value):
-    self['aud'] = value
+      super().__setattr__(name, value)
 
   @property
   def fiat(self):
@@ -224,165 +116,6 @@ class Transaction(dict):
   @fiat.setter
   def fiat(self, value):
     self[LOCALE_FIAT.lower()] = value
-
-  @property
-  def fee_btc(self):
-    return self['fee_btc']
-
-  @fee_btc.setter
-  def fee_btc(self, value):
-    self['fee_btc'] = value
-
-  @property
-  def fee_usd(self):
-    return self['fee_usd']
-
-  @fee_usd.setter
-  def fee_usd(self, value):
-    self['fee_usd'] = value
-
-  @property
-  def fee_aud(self):
-    return self['fee_aud']
-
-  @fee_aud.setter
-  def fee_aud(self, value):
-    self['fee_aud'] = value
-
-  @property
-  def fee_bch(self):
-    if 'fee_bch' in self:
-      return self['fee_bch']
-    else:
-      return 0
-
-  @fee_bch.setter
-  def fee_bch(self, value):
-    self['fee_bch'] = value
-
-  @property
-  def fee_link(self):
-    if 'fee_link' in self:
-      return self['fee_link']
-    else:
-      return 0
-
-  @fee_link.setter
-  def fee_link(self, value):
-    self['fee_link'] = value
-
-  @property
-  def btcusd(self):
-    return self['btcusd']
-
-  @btcusd.setter
-  def btcusd(self, value):
-    self['btcusd'] = value
-
-  @property
-  def btcaud(self):
-    return self['btcaud']
-
-  @btcaud.setter
-  def btcaud(self, value):
-    self['btcaud'] = value
-
-  @property
-  def ltcusd(self):
-    return self['ltcusd']
-
-  @ltcusd.setter
-  def ltcusd(self, value):
-    self['ltcusd'] = value
-
-  @property
-  def ltcbtc(self):
-    return self['ltcbtc']
-
-  @ltcbtc.setter
-  def ltcbtc(self, value):
-    self['ltcbtc'] = value
-
-  @property
-  def nmcusd(self):
-    return self['nmcusd']
-
-  @nmcusd.setter
-  def nmcusd(self, value):
-    self['nmcusd'] = value
-
-  @property
-  def ethusd(self):
-    return self['ethusd']
-
-  @ethusd.setter
-  def ethusd(self, value):
-    self['ethusd'] = value
-
-  @property
-  def ethbtc(self):
-    return self['ethbtc']
-
-  @ethbtc.setter
-  def ethbtc(self, value):
-    self['ethbtc'] = value
-
-  @property
-  def bchusd(self):
-    if 'bchusd' in self:
-      return self['bchusd']
-    else:
-      return 0
-
-  @bchusd.setter
-  def bchusd(self, value):
-    self['bchusd'] = value
-
-  @property
-  def linkusd(self):
-    if 'linkusd' in self:
-      return self['linkusd']
-    else:
-      return 0
-
-  @linkusd.setter
-  def linkusd(self, value):
-    self['linkusd'] = value
-
-  @property
-  def linkaud(self):
-    if 'linkaud' in self:
-      return self['linkaud']
-    else:
-      return 0
-
-  @linkaud.setter
-  def linkaud(self, value):
-    self['linkaud'] = value
-
-  @property
-  def audusd(self):
-    return self['audusd']
-
-  @audusd.setter
-  def audusd(self, value):
-    self['audusd'] = value
-
-  @property
-  def comments(self):
-    return self['comments']
-
-  @comments.setter
-  def comments(self, value):
-    self['comments'] = value
-
-  @property
-  def volume(self):
-    return self['volume']
-
-  @volume.setter
-  def volume(self, value):
-    self['volume'] = value
 
   @property
   def left2right(self):
@@ -401,7 +134,7 @@ class Transaction(dict):
       return self.datetime.year
     else:
       return self.datetime.year + 1
-    
+
   BRIEF_KEYS = ['datetime', 'operation', 'pair', LOCALE_FIAT.lower(), 'usd', 'volume']
 
   @property
@@ -429,12 +162,12 @@ class Transaction(dict):
               volume_key = item
               break
       if volume_key:
-        result.update(volume=self[volume_key])      
+        result.update(volume=self[volume_key])
       else:
         logger.warning('Cannot find volume for transaction: {}'.format(pp.pformat(self)))
         result.update(volume='N/A')
     return result
-  
+
   @staticmethod
   def create_na_brief():
     return dict(
@@ -443,7 +176,7 @@ class Transaction(dict):
             for my_key in
             Transaction.BRIEF_KEYS
         })
-  
+
   @staticmethod
   def mock_sell_transaction(tran):
     """ create mock sell transaction from a non buy/sell transaction crypto fee """
