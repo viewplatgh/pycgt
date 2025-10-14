@@ -52,6 +52,16 @@ def _build_fields():
                 other_crypto_lower = other_crypto.lower()
                 fields[f'{crypto_upper}{other_crypto_upper}'] = f'{crypto_lower}{other_crypto_lower}'
 
+    # Fiat-Fiat pairs (forex rates)
+    for fiat in FIATS:
+        fiat_upper = fiat.upper()
+        fiat_lower = fiat.lower()
+        for other_fiat in FIATS:
+            if fiat != other_fiat:
+                other_fiat_upper = other_fiat.upper()
+                other_fiat_lower = other_fiat.lower()
+                fields[f'{fiat_upper}{other_fiat_upper}'] = f'{fiat_lower}{other_fiat_lower}'
+
     return fields
 
 FIELDS = _build_fields()
