@@ -1,10 +1,16 @@
 import csv
+from datetime import datetime
 from logger import logger
-from shared_def import CRYPTOS, FIATS, FIELDS
+from shared_def import CRYPTOS, FIATS, FIELDS, LOCALE_FIAT
 from .base_transformer import BaseTransformer
+from market_data_provider import MarketDataProviderFactory
 
 class BitstampTransformer(BaseTransformer):
     """Transformer for Bitstamp exchange logs"""
+
+    def __init__(self, input_files, output_file):
+        super().__init__(input_files, output_file)
+        self.forex_provider = MarketDataProviderFactory.create_forex_provider()
 
     def transform(self):
         """Transform Bitstamp CSV format to pycgt format"""
@@ -20,6 +26,34 @@ class BitstampTransformer(BaseTransformer):
                     pycgt_transaction = self._convert_bitstamp_row(row)
                     if pycgt_transaction:
                         transactions.append(pycgt_transaction)
+
+        transactions.sort(key=lambda x: x['Datetime'])
+        locale_fiat_upper = LOCALE_FIAT.upper()
+        locale_fiat_lower = LOCALE_FIAT.lower()
+        forexpair = f'{locale_fiat_lower}usd'
+
+        if locale_fiat_lower != 'usd':
+            # Get date range for forex query
+            start_datetime = datetime.fromisoformat(transactions[0]['Datetime'])
+            end_datetime = datetime.fromisoformat(transactions[-1]['Datetime'])
+            dayrate = self.forex_provider.query(forexpair, start_datetime.date(), end_datetime.date())
+
+            # Autofill locale fiat amounts from USD
+            for tran in transactions:
+                usd_value = float(tran['USD'] or 0)
+                locale_fiat_value = float(tran[locale_fiat_upper] or 0)
+
+                if usd_value > 0 and locale_fiat_value == 0:
+                    tran_datetime = datetime.fromisoformat(tran['Datetime'])
+                    date_key = tran_datetime.date().isoformat()
+                    rate = dayrate.get(date_key, 0)
+
+                    if rate > 0:
+                        forexpair_upper = forexpair.upper()
+                        tran[forexpair_upper] = str(rate)
+                        tran[locale_fiat_upper] = str(round(usd_value / rate, 2))
+                    else:
+                        logger.warning(f"Missing {forexpair} rate for {date_key}, cannot convert USD to {locale_fiat_upper}")
 
         logger.info(f"Converted {len(transactions)} transactions")
         self.write_pycgt_csv(transactions)
