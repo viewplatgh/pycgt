@@ -28,7 +28,7 @@ class GainLoss(dict):
 
   @property
   def gain(self):
-    return self.fiat >= 0
+    return self.fiat > 0
 
   @property
   def transaction(self):
