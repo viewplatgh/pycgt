@@ -48,12 +48,12 @@ class BitstampTransformer(BaseTransformer):
                     usd_value = float(tran['USD'] or 0)
                     locale_fiat_value = float(tran[locale_fiat_upper] or 0)
                     if usd_value > 0 and locale_fiat_value == 0:
-                        tran[locale_fiat_upper] = str(round(usd_value / rate, 2))
+                        tran[locale_fiat_upper] = str(usd_value / rate)
 
                     fee_usd_value = float(tran['Fee(USD)'] or 0)
                     fee_locale_fiat_value = float(tran[f'Fee({locale_fiat_upper})'] or 0)
                     if fee_usd_value > 0 and fee_locale_fiat_value == 0:
-                        tran[f'Fee({locale_fiat_upper})'] = str(round(fee_usd_value / rate, 2))
+                        tran[f'Fee({locale_fiat_upper})'] = str(fee_usd_value / rate)
                 else:
                     logger.warning(f"Missing {forexpair} rate for {date_key}, cannot convert USD to {locale_fiat_upper}")
 
