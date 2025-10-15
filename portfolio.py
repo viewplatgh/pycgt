@@ -178,14 +178,18 @@ class Portfolio(dict):
             raise Exception('Unexpected, disposing position not existing')
           return gains, losses
     
-    # no fee paid in crypto, just create loss based on fee_fiat
-    incidental_loss = GainLoss()
-    incidental_loss.description = 'Incidental loss because of fee paid in fiat'
-    incidental_loss.transaction = tran
-    incidental_loss.fiat = -abs(fee_fiat)
-    incidental_loss.left_date = incidental_loss.right_date = tran.datetime
-    print(incidental_loss.brief_csv)
-    return (None, [incidental_loss])
+    if fee_fiat > 0:
+      # no fee paid in crypto, just create loss based on fee_fiat
+      incidental_loss = GainLoss()
+      incidental_loss.description = 'Incidental loss because of fee paid in fiat'
+      incidental_loss.transaction = tran
+      incidental_loss.fiat = -abs(fee_fiat)
+      incidental_loss.left_date = incidental_loss.right_date = tran.datetime
+      print(incidental_loss.brief_csv)
+      return (None, [incidental_loss])
+    
+    logger.info('Skipped transaction: {}, as nothing detected to process'.format(tran.brief))
+    return (None, None)
 
   def dispose_as_loss(self, crypto, tran):
     losses = []
