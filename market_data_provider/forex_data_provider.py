@@ -74,21 +74,26 @@ class ForexDataProvider(MarketDataProvider):
                     raise ValueError(f"No rate found for {pair} on {start_date}")
             else:
                 res_start_date = date.fromisoformat(data.get('start_date', start_date.isoformat()))
-                res_end_date = date.fromisoformat(data.get('end_date', end_date.isoformat()))
                 rates_by_date = data.get('rates', {})
 
                 last_rate = rates_by_date.get(res_start_date.isoformat(), {}).get(target_currency, 0)
                 if last_rate == 0:
                     raise ValueError(f"No rate found for {pair} on the start date: {res_start_date}")
                 current_date = res_start_date
-                while current_date <= res_end_date:
+                last_rate_reusing_count = 0
+                while current_date <= end_date:
                     date_str = current_date.isoformat()
                     if date_str in rates_by_date:
                         last_rate = rates_by_date[date_str].get(target_currency, last_rate)
                         results[date_str] = float(last_rate)
+                        last_rate_reusing_count = 0
                     else:
                         results[date_str] = float(last_rate)
-
+                        last_rate_reusing_count += 1
+                    if last_rate_reusing_count > 4:
+                        raise ValueError(f"{last_rate_reusing_count} consecutive days without {pair} rate data (up to {date_str}). Check date source.")
+                    if last_rate_reusing_count > 3:
+                        logger.warning(f"Reusing last known {pair} rate for {last_rate_reusing_count} consecutive days up to {date_str}.")
                     current_date += timedelta(days=1) 
 
             logger.info(f"Retrieved {len(results)} forex rates for {pair} (including filled weekend/holiday dates)")
