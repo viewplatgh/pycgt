@@ -40,20 +40,22 @@ class BitstampTransformer(BaseTransformer):
 
             # Autofill locale fiat amounts from USD
             for tran in transactions:
-                usd_value = float(tran['USD'] or 0)
-                locale_fiat_value = float(tran[locale_fiat_upper] or 0)
-
-                if usd_value > 0 and locale_fiat_value == 0:
-                    tran_datetime = datetime.fromisoformat(tran['Datetime'])
-                    date_key = tran_datetime.date().isoformat()
-                    rate = dayrate.get(date_key, 0)
-
-                    if rate > 0:
-                        forexpair_upper = forexpair.upper()
-                        tran[forexpair_upper] = str(rate)
+                tran_datetime = datetime.fromisoformat(tran['Datetime'])
+                date_key = tran_datetime.date().isoformat()
+                rate = dayrate.get(date_key, 0)
+                if rate > 0:
+                    tran[forexpair.upper()] = str(rate)
+                    usd_value = float(tran['USD'] or 0)
+                    locale_fiat_value = float(tran[locale_fiat_upper] or 0)
+                    if usd_value > 0 and locale_fiat_value == 0:
                         tran[locale_fiat_upper] = str(round(usd_value / rate, 2))
-                    else:
-                        logger.warning(f"Missing {forexpair} rate for {date_key}, cannot convert USD to {locale_fiat_upper}")
+
+                    fee_usd_value = float(tran['Fee(USD)'] or 0)
+                    fee_locale_fiat_value = float(tran[f'Fee({locale_fiat_upper})'] or 0)
+                    if fee_usd_value > 0 and fee_locale_fiat_value == 0:
+                        tran[f'Fee({locale_fiat_upper})'] = str(round(fee_usd_value / rate, 2))
+                else:
+                    logger.warning(f"Missing {forexpair} rate for {date_key}, cannot convert USD to {locale_fiat_upper}")
 
         logger.info(f"Converted {len(transactions)} transactions")
         self.write_pycgt_csv(transactions)
