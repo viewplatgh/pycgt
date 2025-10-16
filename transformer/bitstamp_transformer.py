@@ -4,6 +4,7 @@ from logger import logger
 from shared_def import CRYPTOS, FIATS, FIELDS, LOCALE_FIAT
 from .base_transformer import BaseTransformer
 from market_data_provider import MarketDataProviderFactory
+from transaction import float_parser
 
 class BitstampTransformer(BaseTransformer):
     """Transformer for Bitstamp exchange logs"""
@@ -45,13 +46,13 @@ class BitstampTransformer(BaseTransformer):
                 rate = dayrate.get(date_key, 0)
                 if rate > 0:
                     tran[forexpair.upper()] = str(rate)
-                    usd_value = float(tran['USD'] or 0)
-                    locale_fiat_value = float(tran[locale_fiat_upper] or 0)
+                    usd_value = float_parser(tran['USD'] or 0)
+                    locale_fiat_value = float_parser(tran[locale_fiat_upper] or 0)
                     if usd_value > 0 and locale_fiat_value == 0:
                         tran[locale_fiat_upper] = str(usd_value / rate)
 
-                    fee_usd_value = float(tran['Fee(USD)'] or 0)
-                    fee_locale_fiat_value = float(tran[f'Fee({locale_fiat_upper})'] or 0)
+                    fee_usd_value = float_parser(tran['Fee(USD)'] or 0)
+                    fee_locale_fiat_value = float_parser(tran[f'Fee({locale_fiat_upper})'] or 0)
                     if fee_usd_value > 0 and fee_locale_fiat_value == 0:
                         tran[f'Fee({locale_fiat_upper})'] = str(fee_usd_value / rate)
                 else:
@@ -87,11 +88,15 @@ class BitstampTransformer(BaseTransformer):
         pycgt_row['Datetime'] = row['Datetime']
         pycgt_row['Comments'] = f"Order ID: {row['Order ID']}" if row['Order ID'] else ''
 
+        rate = row['Rate']
         amount = row['Amount']
         amount_currency = row['Amount currency'].upper()
         value = row['Value']
+        float_rate = float_parser(rate)
+        float_amount = float_parser(amount)
+        if float_rate > 0 and float_amount > 0:
+            value = str(float_rate * float_amount)
         value_currency = row['Value currency'].upper()
-        rate = row['Rate']
         fee = row['Fee']
         fee_currency = row['Fee currency'].upper()
 
