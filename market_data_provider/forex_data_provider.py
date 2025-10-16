@@ -3,6 +3,7 @@ from typing import Dict, Optional
 import requests
 from logger import logger
 from .market_data_provider import MarketDataProvider
+from transaction import float_parser
 
 class ForexDataProvider(MarketDataProvider):
     """
@@ -53,7 +54,7 @@ class ForexDataProvider(MarketDataProvider):
             if start_date == end_date:
                 rate = data.get('rates', {}).get(target_currency)
                 if rate:
-                    results[start_date.isoformat()] = float(rate)
+                    results[start_date.isoformat()] = float_parser(rate)
                 else:
                     raise ValueError(f"No rate found for {pair} on {start_date}")
             else:
@@ -69,10 +70,10 @@ class ForexDataProvider(MarketDataProvider):
                     date_str = current_date.isoformat()
                     if date_str in rates_by_date:
                         last_rate = rates_by_date[date_str].get(target_currency, last_rate)
-                        results[date_str] = float(last_rate)
+                        results[date_str] = float_parser(last_rate)
                         last_rate_reusing_count = 0
                     else:
-                        results[date_str] = float(last_rate)
+                        results[date_str] = float_parser(last_rate)
                         last_rate_reusing_count += 1
                     if last_rate_reusing_count > 4:
                         raise ValueError(f"{last_rate_reusing_count} consecutive days without {pair} rate data (up to {date_str}). Check date source.")
