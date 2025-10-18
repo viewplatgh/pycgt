@@ -1,17 +1,13 @@
 import csv
-from datetime import datetime
 from collections import defaultdict
 from logger import logger
-from shared_def import CRYPTOS, FIATS, FIELDS, LOCALE_FIAT
+from shared_def import CRYPTOS, FIATS, FIELDS
 from .base_transformer import BaseTransformer
 from transaction import float_parser
 
 
 class IndependentReserveTransformer(BaseTransformer):
     """Transformer for Independent Reserve exchange logs"""
-
-    def __init__(self, input_files, output_file):
-        super().__init__(input_files, output_file)
 
     def transform(self):
         """Transform Independent Reserve CSV format to pycgt format"""
@@ -48,8 +44,9 @@ class IndependentReserveTransformer(BaseTransformer):
                     if pycgt_transaction:
                         transactions.append(pycgt_transaction)
 
-        transactions.sort(key=lambda x: x['Datetime'])
-        logger.info(f"Converted {len(transactions)} transactions")
+        # Auto-fill locale fiat and fees using shared base class method
+        self.autofill_locale_fiat_and_fees(transactions)
+
         self.write_pycgt_csv(transactions)
         return transactions
 
