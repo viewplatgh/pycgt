@@ -6,10 +6,12 @@ Each transformer knows how to read the exchange's export format and convert it
 to the standard pycgt CSV format.
 """
 from .bitstamp_transformer import BitstampTransformer
+from .independent_reserve_transformer import IndependentReserveTransformer
 
 # Registry of available transformers
 TRANSFORMERS = {
     'bitstamp': BitstampTransformer,
+    'independentreserve': IndependentReserveTransformer,
 }
 
 def get_transformer(exchange_type, input_files, output_file):

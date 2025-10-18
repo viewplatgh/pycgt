@@ -14,7 +14,8 @@ precision_threshold = 0.00000001
 
 [data]
 fiats = ["usd", "aud"]
-cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link"]
+# cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link"] # legacy bitstamp
+cryptos = ["link", "usdt"] # independent reserve
 operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
 parse_datetime_formats = ["%m/%d/%Y %H:%M:%S", "%b. %d, %Y, %I:%M %p", "%b. %d, %Y, %H:%M %p", "%Y-%m-%d %H:%M:%S"]
 
