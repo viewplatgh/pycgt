@@ -2,11 +2,10 @@
 
 import csv
 from abc import ABC, abstractmethod
-from datetime import datetime
-from shared_def import FIELDS, CRYPTOS, LOCALE_FIAT
+from shared_def import FIELDS, CRYPTOS, LOCALE_FIAT, STABLECOINS
 from logger import logger
 from market_data_provider import MarketDataProviderFactory
-from transaction import float_parser
+from transaction import float_parser, datetime_parser
 
 
 class BaseTransformer(ABC):
@@ -69,7 +68,7 @@ class BaseTransformer(ABC):
         Returns:
             The same transactions list (modified in-place) sorted by datetime
         """
-        transactions.sort(key=lambda x: x['Datetime'])
+        transactions.sort(key=lambda x: datetime_parser(x['Datetime']))
         locale_fiat_upper = LOCALE_FIAT.upper()
         locale_fiat_lower = LOCALE_FIAT.lower()
         forexpair = f'{locale_fiat_lower}usd'
@@ -77,13 +76,13 @@ class BaseTransformer(ABC):
 
         if locale_fiat_lower != 'usd':
             # Get date range for forex query
-            start_datetime = datetime.fromisoformat(transactions[0]['Datetime'])
-            end_datetime = datetime.fromisoformat(transactions[-1]['Datetime'])
+            start_datetime = datetime_parser(transactions[0]['Datetime'])
+            end_datetime = datetime_parser(transactions[-1]['Datetime'])
             dayrate = self.forex_provider.query(forexpair, start_datetime.date(), end_datetime.date())
 
             # Autofill locale fiat amounts from USD
             for tran in transactions:
-                tran_datetime = datetime.fromisoformat(tran['Datetime'])
+                tran_datetime = datetime_parser(tran['Datetime'])
                 date_key = tran_datetime.date().isoformat()
                 rate = dayrate.get(date_key, 0)
                 if rate > 0:
@@ -97,6 +96,18 @@ class BaseTransformer(ABC):
                     fee_locale_fiat_value = float_parser(tran[f'Fee({locale_fiat_upper})'])
                     if fee_usd_value > 0 and fee_locale_fiat_value == 0:
                         tran[f'Fee({locale_fiat_upper})'] = str(fee_usd_value / rate)
+
+                    if 'usdt' in CRYPTOS:
+                        # Autofill USDT amounts/fees if applicable
+                        usdt_value = float_parser(tran['USDT'])
+                        locale_fiat_value = float_parser(tran[locale_fiat_upper])
+                        if usdt_value > 0 and locale_fiat_value == 0:
+                            tran[locale_fiat_upper] = str(usdt_value / rate)
+
+                        fee_usdt_value = float_parser(tran['Fee(USDT)'])
+                        fee_locale_fiat_value = float_parser(tran[f'Fee({locale_fiat_upper})'])
+                        if fee_usdt_value > 0 and fee_locale_fiat_value == 0:
+                            tran[f'Fee({locale_fiat_upper})'] = str(fee_usdt_value / rate)
                 else:
                     logger.warning(f"Missing {forexpair} rate for {date_key}, cannot convert USD to {locale_fiat_upper}")
 
@@ -119,7 +130,7 @@ class BaseTransformer(ABC):
 
                     if not has_rate:
                         # Need to query price for this date
-                        tran_datetime = datetime.fromisoformat(tran['Datetime'])
+                        tran_datetime = datetime_parser(tran['Datetime'])
                         date_key = tran_datetime.date()
 
                         if crypto not in crypto_dates_need_query:
@@ -129,6 +140,8 @@ class BaseTransformer(ABC):
         # Step 2: Query crypto/USD prices only for dates that need them
         crypto_usd_prices = {}
         for crypto, dates in crypto_dates_need_query.items():
+            if crypto in STABLECOINS:
+                continue
             if dates:
                 cryptousd_pair = f'{crypto}usd'
                 min_date = min(dates)
@@ -138,10 +151,12 @@ class BaseTransformer(ABC):
 
         # Step 3: Convert crypto fees to locale fiat (crypto_usd * usd_to_locale_fiat)
         for tran in transactions:
-            tran_datetime = datetime.fromisoformat(tran['Datetime'])
+            tran_datetime = datetime_parser(tran['Datetime'])
             date_key = tran_datetime.date().isoformat()
 
             for crypto in CRYPTOS:
+                if crypto in STABLECOINS:
+                    continue
                 crypto_upper = crypto.upper()
                 fee_crypto_field = f'Fee({crypto_upper})'
                 fee_locale_fiat_field = f'Fee({locale_fiat_upper})'
