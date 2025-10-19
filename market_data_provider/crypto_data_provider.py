@@ -1,6 +1,7 @@
 from datetime import date, timedelta, datetime
 from typing import Dict, Optional
 import requests
+from shared_def import REQUESTS_TIMEOUT
 from logger import logger
 from .market_data_provider import MarketDataProvider
 from transaction import float_parser
@@ -84,7 +85,7 @@ class CryptoDataProvider(MarketDataProvider):
                 'end': end_timestamp
             }
 
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, timeout=REQUESTS_TIMEOUT)
             response.raise_for_status()
             data = response.json()
 
