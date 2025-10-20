@@ -12,6 +12,7 @@ position_accounting = "filo"
 sort_by_datetime_asc = true
 precision_threshold = 0.00000001
 requests_timeout = 60
+forex_query_chunk_days = 180
 
 [data]
 fiats = ["usd", "aud"]

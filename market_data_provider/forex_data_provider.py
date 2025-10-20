@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, Optional
 import requests
-from shared_def import REQUESTS_TIMEOUT
+from shared_def import REQUESTS_TIMEOUT, FOREX_QUERY_CHUNK_DAYS
 from logger import logger
 from .market_data_provider import MarketDataProvider
 from transaction import float_parser
@@ -110,8 +110,8 @@ class ForexDataProvider(MarketDataProvider):
         chunk_count = 0
 
         while current_start <= end_date:
-            # Calculate chunk end date (1 year from current_start, or end_date if sooner)
-            chunk_end = date(current_start.year + 1, current_start.month, current_start.day) - timedelta(days=1)
+            # Calculate chunk end date (FOREX_QUERY_CHUNK_DAYS from current_start, or end_date if sooner)
+            chunk_end = current_start + timedelta(days=FOREX_QUERY_CHUNK_DAYS)
             if chunk_end > end_date:
                 chunk_end = end_date
 

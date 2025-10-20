@@ -13,6 +13,8 @@ POSITION_ACCOUNTING = config['options']['position_accounting']
 SORT_BY_DATETIME_ASC = config['options']['sort_by_datetime_asc']
 PRECISION_THRESHOLD = config['options']['precision_threshold']
 REQUESTS_TIMEOUT = config['options']['requests_timeout']
+FOREX_QUERY_CHUNK_DAYS = config['options']['forex_query_chunk_days']
+
 LOCALE_FIAT = config['locale']['fiat']
 FY_START_MONTH = config['locale']['fy_start_month']
 
