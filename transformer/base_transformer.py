@@ -68,7 +68,6 @@ class BaseTransformer(ABC):
         Returns:
             The same transactions list (modified in-place) sorted by datetime
         """
-        transactions.sort(key=lambda x: datetime_parser(x['Datetime']))
         locale_fiat_upper = LOCALE_FIAT.upper()
         locale_fiat_lower = LOCALE_FIAT.lower()
         forexpair = f'{locale_fiat_lower}usd'
