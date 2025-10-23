@@ -22,7 +22,7 @@ class NexoTransformer(BaseTransformer):
             with open(input_file, 'r') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    pycgt_transactions = self._convert_nexo_row(row)
+                    pycgt_transactions = self._convert_nexo_row(row, transactions)
                     if pycgt_transactions:
                         # Can return multiple transactions (e.g., Interest creates 2 logs)
                         if isinstance(pycgt_transactions, list):
@@ -37,7 +37,7 @@ class NexoTransformer(BaseTransformer):
         self.write_pycgt_csv(transactions)
         return transactions
 
-    def _convert_nexo_row(self, row):
+    def _convert_nexo_row(self, row, transactions):
         """
         Convert a single Nexo row to pycgt format
 
@@ -57,15 +57,15 @@ class NexoTransformer(BaseTransformer):
         details = row['Details']
         datetime = row['Date / Time (UTC)']
 
-        input_currency = row['Input Currency'].upper()
-        output_currency = row['Output Currency'].upper()
+        input_currency_upper = row['Input Currency'].upper()
+        output_currency_upper = row['Output Currency'].upper()
         output_amount = row['Output Amount']
 
-        input_currency_lower = input_currency.lower()
-        output_currency_lower = output_currency.lower()
+        input_currency_lower = input_currency_upper.lower()
+        output_currency_lower = output_currency_upper.lower()
 
         if input_currency_lower not in CRYPTOS + FIATS or output_currency_lower not in CRYPTOS + FIATS:
-            raise ValueError(f"Missing configuration for currency: input={input_currency}, output={output_currency}")
+            raise ValueError(f"Missing configuration for currency: input={input_currency_upper}, output={output_currency_upper}")
 
         # Parse USD Equivalent (remove $ and ,)
         usd_equivalent = row['USD Equivalent'].replace('$', '').replace(',', '')
@@ -79,7 +79,7 @@ class NexoTransformer(BaseTransformer):
         # Handle Interest transactions - create TWO pycgt logs
         if transaction_type == 'Interest' or transaction_type == 'Fixed Term Interest':
             return self._create_interest_logs(
-                datetime, output_currency, output_amount, usd_equivalent, comments
+                datetime, output_currency_upper, output_amount, usd_equivalent, comments, transactions
             )
 
         # Initialize pycgt transaction with default empty values from FIELDS
@@ -98,7 +98,7 @@ class NexoTransformer(BaseTransformer):
                 'Withdrawal': 'withdrawal'
             }
             pycgt_row['Operation'] = _operationMap[transaction_type]
-            pycgt_row[output_currency] = output_amount
+            pycgt_row[output_currency_upper] = output_amount
             # Set fee
             if fee and fee != '-' and fee_currency:
                 fee_field = f"Fee({fee_currency})"
@@ -115,7 +115,7 @@ class NexoTransformer(BaseTransformer):
 
         return pycgt_row
 
-    def _create_interest_logs(self, datetime, currency, amount, usd_equivalent, comments):
+    def _create_interest_logs(self, datetime, currency, amount, usd_equivalent, comments, transactions):
         """
         Create two pycgt logs for Interest transactions per ATO rules:
         1. "gain" operation - Record taxable income immediately (no CGT discount)
@@ -139,11 +139,21 @@ class NexoTransformer(BaseTransformer):
             raise ValueError(f"Interest amount must be greater than zero: {comments}")       
         float_usd = float_parser(usd_equivalent)
         if float_usd <= 0:
-            logger.warning(f"Skipping invalid USD equivalent for interest: {comments}")
-            return None
+            currencyusdrate = 0
+            for tran in reversed(transactions):
+                pair = f"{currency}USD"
+                rate_str = tran.get(pair, '')
+                rate = float_parser(rate_str)
+                if rate > 0:
+                    currencyusdrate = rate
+                    break
+            if currencyusdrate == 0:
+                raise ValueError(f"Cannot determine USD equivalent for interest: {comments}")
+            float_usd = float_amount * currencyusdrate
 
         price_per_unit = float_usd / float_amount
         rate_pair = f"{currency}USD"
+        usd_value_str = str(float_usd)
 
         # Log 1: "gain" operation for taxable income
         gain_log = {field: '' for field in FIELDS.keys()}
@@ -153,7 +163,7 @@ class NexoTransformer(BaseTransformer):
         gain_log['Type'] = 'Interest'
         gain_log['Comments'] = f"{comments} [GAIN]"
         gain_log[currency] = amount
-        gain_log['USD'] = usd_equivalent
+        gain_log['USD'] = usd_value_str
         gain_log[rate_pair] = str(price_per_unit)
 
         logs.append(gain_log)
@@ -167,7 +177,7 @@ class NexoTransformer(BaseTransformer):
         buy_log['Pair'] = f"{currency.lower()}usd"
         buy_log['Comments'] = f"{comments} [BUY]"
         buy_log[currency] = amount
-        buy_log['USD'] = usd_equivalent
+        buy_log['USD'] = usd_value_str
         buy_log[rate_pair] = str(price_per_unit)
 
         logs.append(buy_log)
