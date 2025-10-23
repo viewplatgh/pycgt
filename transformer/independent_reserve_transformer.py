@@ -3,7 +3,7 @@ from collections import defaultdict
 from logger import logger
 from shared_def import CRYPTOS, FIATS, FIELDS
 from .base_transformer import BaseTransformer
-from transaction import float_parser
+from transaction import float_parser, datetime_parser
 
 
 class IndependentReserveTransformer(BaseTransformer):
@@ -44,7 +44,8 @@ class IndependentReserveTransformer(BaseTransformer):
                     if pycgt_transaction:
                         transactions.append(pycgt_transaction)
 
-        # Auto-fill locale fiat and fees using shared base class method
+        transactions.sort(key=lambda x: datetime_parser(x['Datetime']))
+
         self.autofill_locale_fiat_and_fees(transactions)
 
         self.write_pycgt_csv(transactions)
