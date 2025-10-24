@@ -1,7 +1,7 @@
 import re
 import pprint
 import copy
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil import parser
 from shared_def import (
     FY_START_MONTH, FIATS, CRYPTOS, PAIR_SPLIT_MAP,
@@ -36,12 +36,18 @@ def datetime_parser(x):
   for fmt in PARSE_DATETIME_FORMATS:
     try:
       result = datetime.strptime(x, fmt)
+      # If timezone-naive, assume UTC
+      if result.tzinfo is None:
+        result = result.replace(tzinfo=timezone.utc)
       return result
     except BaseException as _:
       continue
 
   try:
     result = parser.parse(x)
+    # If timezone-naive, assume UTC
+    if result.tzinfo is None:
+      result = result.replace(tzinfo=timezone.utc)
     return result
   except BaseException as _:
     logger.error(f"Failed to parse datetime '{x}'")

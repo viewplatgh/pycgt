@@ -74,11 +74,19 @@ class AnnualStatement(dict):
       if losses:
         self.losses.extend(losses)
     elif tran.operation in ['deposit', 'withdrawal']:
-      gains, losses = self.portfolio.process_non_buy_sell_transaction(tran)
+      gains, losses = self.portfolio.process_deposit_withdrawal_transaction(tran)
       if gains:
         self.gains.extend(gains)
       if losses:
         self.losses.extend(losses)
+    elif tran.operation == 'gain':
+      gain = GainLoss()
+      locale_fiat_lower = LOCALE_FIAT.lower()
+      gain.fiat = abs(tran[locale_fiat_lower])
+      gain.description = tran.comments
+      gain.left_date = gain.right_date = tran.datetime
+      print(gain.brief_csv)
+      self.gains.append(gain)
     elif tran.operation == 'loss':
       for crypto in CRYPTOS:
         cryptofield = crypto.lower()
