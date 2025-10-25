@@ -7,6 +7,7 @@ from transaction import Transaction
 from annual_statement import AnnualStatement
 from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS, LOCALE_FIAT
 
+from transformer import get_transformer
 from logger import logger
 from utils import generate_default_output_filename
 
@@ -80,7 +81,6 @@ def process_cgt_report(csv_files):
 
 def transform_logs(csv_files, exchange_type, output_file):
   """Transform exchange logs to pycgt format"""
-  from transformer import get_transformer
 
   logger.info(f"Transforming {len(csv_files)} file(s) from {exchange_type} format to pycgt format")
   logger.info(f"Output will be written to: {output_file}")
