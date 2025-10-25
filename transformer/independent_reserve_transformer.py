@@ -1,7 +1,7 @@
 import csv
 from collections import defaultdict
 from logger import logger
-from shared_def import CRYPTOS, FIATS, FIELDS
+from shared_def import CRYPTOS, FIELDS
 from .base_transformer import BaseTransformer
 from transaction import float_parser, datetime_parser
 
