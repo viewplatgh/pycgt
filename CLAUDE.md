@@ -221,3 +221,4 @@ Planned improvements include:
 - Abstract provider layer for pluggable market data sources (frankfurter.app, CoinGecko)
 - Bulk date range queries for efficient rate fetching
 - Additional exchange transformer implementations
+- Activate the virtual environment before running python main.py to test, i.e. source .virtualenv/bin/activate && python main.py ...

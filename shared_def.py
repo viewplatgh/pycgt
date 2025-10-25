@@ -39,22 +39,10 @@ def _build_fields():
         fields[fiat_upper] = fiat_lower
         fields[f'Fee({fiat_upper})'] = f'fee_{fiat_lower}'
 
-    for crypto in CRYPTOS:
-        crypto_upper = crypto.upper()
-        crypto_lower = crypto.lower()
-
-        # Crypto-Fiat pairs
-        for fiat in FIATS:
-            fiat_upper = fiat.upper()
-            fiat_lower = fiat.lower()
-            fields[f'{crypto_upper}{fiat_upper}'] = f'{crypto_lower}{fiat_lower}'
-
-        # Crypto-Crypto pairs
-        for other_crypto in CRYPTOS:
-            if crypto != other_crypto:
-                other_crypto_upper = other_crypto.upper()
-                other_crypto_lower = other_crypto.lower()
-                fields[f'{crypto_upper}{other_crypto_upper}'] = f'{crypto_lower}{other_crypto_lower}'
+    for pair_value in PAIR_SPLIT_MAP.values():
+        pair_upper = ''.join([currency.upper() for currency in pair_value])
+        pair_lower = ''.join([currency.lower() for currency in pair_value])
+        fields[pair_upper] = pair_lower
 
     # Fiat-Fiat pairs (forex rates)
     for fiat in FIATS:
