@@ -1,4 +1,5 @@
 from config_loader import get_config
+from logger import logger
 
 config = get_config()
 
@@ -26,6 +27,25 @@ def _build_fields():
     """
     # Start with fields from config (non-crypto/fiat fields)
     fields = dict(config['data']['fields'])
+
+    # Validation: Check that all currencies in PAIR_SPLIT_MAP are defined
+    all_currencies_in_pairs = set()
+    for pair_value in PAIR_SPLIT_MAP.values():
+        all_currencies_in_pairs.update([c.lower() for c in pair_value])
+
+    defined_currencies = set([c.lower() for c in CRYPTOS] + [f.lower() for f in FIATS])
+    undefined_in_pairs = all_currencies_in_pairs - defined_currencies
+    if undefined_in_pairs:
+        raise ValueError(
+            f"PAIR_SPLIT_MAP configuration contains currencies not defined in CRYPTOS or FIATS: {undefined_in_pairs}"
+        )
+
+    cryptos_in_pairs = set([c.lower() for c in all_currencies_in_pairs if c.lower() in [cr.lower() for cr in CRYPTOS]])
+    cryptos_not_in_pairs = set([c.lower() for c in CRYPTOS]) - cryptos_in_pairs
+    if cryptos_not_in_pairs:
+        logger.warning(
+            f"CRYPTOS contains currencies not used in any PAIR_SPLIT_MAP: {cryptos_not_in_pairs}"
+        )
 
     for crypto in CRYPTOS:
         crypto_upper = crypto.upper()
