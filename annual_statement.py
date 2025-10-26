@@ -148,7 +148,7 @@ class AnnualStatement(dict):
   def report(self):
     fiat_currency = LOCALE_FIAT.upper()
     print('========================================================')
-    print('Tax return report for year: {}'.format(self.financial_year))
+    print('Tax return report for year: {}(FY{}-{})'.format(self.financial_year, self.financial_year - 1, self.financial_year % 100))
     print('Gross gains of the year: ${:.2f} {}'.format(self.gross_gains_sum, fiat_currency))
     print('Discountable gains of the year: ${:.2f} {}'.format(
         self.discountable_gains_sum, fiat_currency))
