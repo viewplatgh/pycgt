@@ -6,16 +6,16 @@ A capital gain tax calculator for crypto traders or investors with configurable 
 
 - **Locale-aware calculations**: Configure your local fiat currency (AUD, USD, etc.) for cost basis and reporting
 - **Flexible accounting**: Supports both FILO (Last-In-First-Out) and FIFO (First-In-First-Out) position matching
-- **Exchange log transformation**: Built-in transformer for Bitstamp exports, extensible for other exchanges
+- **Exchange log transformation**: Built-in transformer for Bitstamp, IndependentReserve, Nexo, Exdos Wallet, etherscan and solscan transaction logs, extensible for other types of logs
 - **Comprehensive fee handling**: Crypto fees trigger disposal events; fiat fees treated as incidental losses
 - **Australian tax compliance**: CGT discount for assets held >12 months, configurable fiscal year
 
 ## Known Limitations
 
-- Exchange transformer support is limited (currently only Bitstamp; manual transformation required for other exchanges)
+- Limited types of transformers support (Extending work or manual transformation required for unsupported logs)
 - No automated market data fetching for missing exchange rates
 - Limited to assets defined in config.toml:
-  - **Supported cryptos**: BTC, ETH, LTC, NMC, BCH, LINK
+  - **Supported cryptos**: BTC, ETH, LTC, NMC, BCH, LINK, USDT, NEXO, SOL, TRX, TON
   - **Supported fiats**: USD, AUD
   - **Supported pairs**: btcusd, btcaud, ltcusd, ltcbtc, nmcusd, ethusd, ethbtc, bchusd, linkusd, linkaud, audusd, and Kraken-style pairs (xethxxbt, xethzusd, etc.)
 
@@ -34,9 +34,9 @@ sort_by_datetime_asc = true
 precision_threshold = 0.00000001
 
 [data]
-cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link"]
+cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link", "usdt", "nexo", "sol", "trx", "ton"]
 fiats = ["usd", "aud"]
-operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
+operations = ["buy", "sell", "deposit", "withdrawal", "gain", "loss"]
 # ... see config.toml for full configuration
 ```
 
@@ -44,13 +44,17 @@ operations = ["buy", "sell", "deposit", "withdrawal", "loss"]
 
 ## Trading Logs pycgt Can Process
 
-pycgt expects CSV files with specific columns. Column names are configurable via `[data.fields]` in config.toml:
+pycgt expects CSV files with specific columns.
+
+Some predefined columns are `[data.fields]` in config.toml:
 
 **Required columns:**
+
 - **Datetime**: When the trade happened (multiple formats supported)
 - **Operation**: 'Buy', 'Sell', 'Deposit', 'Withdrawal', or 'Loss'
 
 **Optional columns:**
+
 - **Type**: Transaction type description
 - **Exchange**: The exchange where the trade was made
 - **Pair**: Trading pair (e.g., btcusd, btcaud, ethusd)
@@ -59,6 +63,8 @@ pycgt expects CSV files with specific columns. Column names are configurable via
 - **Fee columns**: Fee(BTC), Fee(LTC), Fee(NMC), Fee(ETH), Fee(BCH), Fee(LINK), Fee(USD), Fee(AUD)
 - **Exchange rates**: BTCUSD, BTCAUD, LTCUSD, LTCBTC, NMCUSD, ETHUSD, ETHBTC, BCHUSD, LINKUSD, LINKAUD, AUDUSD
 - **Comments**: Any notes about the transaction
+
+Other columns would be built according to CRYPTOS and FIATS configuration
 
 CSV example (see example.csv):
 
@@ -161,19 +167,13 @@ Portfolio of the year:
 To add support for a new cryptocurrency:
 
 1. Update `config.toml`:
+
    ```toml
    [data]
    cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link", "your_coin"]
    ```
 
-2. Add field mappings:
-   ```toml
-   [data.fields]
-   "YOUR_COIN" = "your_coin"
-   "Fee(YOUR_COIN)" = "fee_your_coin"
-   ```
-
-3. Add trading pairs:
+2. Add trading pairs:
    ```toml
    [data.pair_split_map]
    your_coinusd = ["your_coin", "usd"]

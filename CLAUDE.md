@@ -17,6 +17,8 @@ pip install -r requirements.txt
 
 ## Running the Application
 
+- Remember to activate the virtual environment before running python main.py to test, i.e. source .virtualenv/bin/activate && python main.py ...
+
 ### CGT Report Mode (Default)
 
 Process pycgt-formatted CSV files and generate capital gains tax reports:
@@ -57,7 +59,10 @@ python main.py -t -x bitstamp -o converted.csv Bitstamp-Export.csv
 ```
 
 **Supported Exchanges:**
+
 - `bitstamp` - Bitstamp transaction export format
+- `independentreserve` - Independent Reserve transaction export format
+- `nexo` - Nexo transaction export format
 
 If `-o` is not specified, output filename is auto-generated as `[input-basename]-transformed-[random].csv`.
 
@@ -75,13 +80,14 @@ All settings are centralized in `config.toml`:
 - **[data]**:
   - `cryptos`: List of supported cryptocurrencies
   - `fiats`: List of supported fiat currencies
-  - `operations`: Supported transaction types (buy, sell, deposit, withdrawal, loss)
+  - `operations`: Supported transaction types (buy, sell, deposit, withdrawal, gain, loss)
   - `parse_datetime_formats`: Custom datetime formats to try before falling back to dateutil parser
   - `[data.fields]`: CSV column name mappings
   - `[data.pair_split_map]`: Trading pair definitions (e.g., btcusd = ["btc", "usd"])
 - **[logging]**: Log level and format configuration
 
 **IMPORTANT**:
+
 - The `locale.fiat` setting determines which currency is used throughout the application for cost basis calculation and tax reporting. All output will be in this currency.
 - The position accounting method (`filo` vs `fifo`) fundamentally changes how capital gains are calculated. FILO (Last-In-First-Out) is the default.
 
@@ -90,6 +96,7 @@ All settings are centralized in `config.toml`:
 ### Main Components
 
 **Core Processing:**
+
 - **main.py**: Entry point with argument parsing, supports both CGT report generation and exchange log transformation
 - **config_loader.py**: Loads and manages configuration from config.toml (Python 3.11+ uses native tomllib, older versions use toml package)
 - **shared_def.py**: Imports configuration and exposes it as module constants (CRYPTOS, FIATS, LOCALE_FIAT, etc.)
@@ -102,9 +109,12 @@ All settings are centralized in `config.toml`:
 - **utils.py**: Utility functions (e.g., auto-generating output filenames)
 
 **Transformer Module:**
+
 - **transformer/base_transformer.py**: Abstract base class for exchange log transformers
 - **transformer/bitstamp_transformer.py**: Bitstamp-specific transformer implementation
-- **transformer/__init__.py**: Exports `get_transformer()` factory function
+- **transformer/independent_reserve_transformer**: IndependentReserve-specific transformer implementation
+- **transformer/nexo_transformer**: Nexo-specific transformer implementation
+- **transformer/**init**.py**: Exports `get_transformer()` factory function
 
 ### Data Flow
 
@@ -114,7 +124,7 @@ All settings are centralized in `config.toml`:
 4. Transactions are sorted chronologically if `sort_by_datetime_asc` is true
 5. Transactions are grouped by financial year into `AnnualStatement` objects
 6. Each statement maintains a `Portfolio` that tracks crypto positions using FILO or FIFO accounting
-7. Capital gains/losses are calculated when crypto is sold and positions are matched
+7. Capital gains/losses are calculated when crypto is disposed and positions are matched
 8. Detailed CSV records are printed to stdout for each gain/loss event
 9. Annual tax reports are generated showing gains, losses, and portfolio balances
 
@@ -177,6 +187,7 @@ Currently configured to support:
 - **Trading pairs**: btcusd, btcaud, ltcusd, ltcbtc, nmcusd, ethusd, ethbtc, bchusd, linkusd, linkaud, audusd, xethxxbt, xethzusd, xltczusd, xxbtzusd, xltcxxbt
 
 To add support for new assets:
+
 1. Update `[data]` section in `config.toml` (add to cryptos/fiats lists)
 2. Add field mappings in `[data.fields]` (e.g., "BCH" = "bch", "Fee(BCH)" = "fee_bch")
 3. Add trading pairs in `[data.pair_split_map]` (e.g., bchusd = ["bch", "usd"])
@@ -194,6 +205,7 @@ To add support for a new exchange:
 4. Use `CRYPTOS`, `FIATS`, and `FIELDS` from shared_def for dynamic field handling
 
 Example structure:
+
 ```python
 from transformer.base_transformer import BaseTransformer
 from shared_def import CRYPTOS, FIATS, FIELDS
@@ -207,8 +219,8 @@ class MyExchangeTransformer(BaseTransformer):
 
 ## Limitations
 
-- Exchange transformer support is limited (currently only Bitstamp)
-- No automated market data fetching for missing exchange rates
+- Exchange transformer support is limited (currently only a few supported)
+- Automated market data fetching are depending on frankfurter and bitstamp api
 - Limited to assets defined in config.toml
 - Specific trading pairs only (see config.toml [data.pair_split_map] for full list)
 - No test suite currently exists
@@ -217,8 +229,8 @@ class MyExchangeTransformer(BaseTransformer):
 ## Future Enhancements
 
 Planned improvements include:
-- Market data provider integration for automated exchange rate fetching
-- Abstract provider layer for pluggable market data sources (frankfurter.app, CoinGecko)
-- Bulk date range queries for efficient rate fetching
+
+- Add more various market data providers integration for automated exchange rate fetching
+  - Add "cache", hosting a database somewhere, for forex rates data
+- Abstract provider layer for pluggable market data sources (frankfurter.app, Bitstamp)
 - Additional exchange transformer implementations
-- Activate the virtual environment before running python main.py to test, i.e. source .virtualenv/bin/activate && python main.py ...
