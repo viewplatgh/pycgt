@@ -63,9 +63,22 @@ def process_cgt_report(csv_files):
       statement.process_transaction(tran)
     else:
       # new financial year, create new statement
+      previous_financial_year = statements[-1][0] if len(statements) else None 
       previous_statement = statements[-1][1] if len(statements) else None
       previous_portfolio = copy.deepcopy(
           previous_statement.portfolio) if previous_statement else None
+      if previous_financial_year and tran.financial_year - previous_financial_year > 1:
+        for missing_year in range(previous_financial_year + 1, tran.financial_year):
+          missing_statement = AnnualStatement(
+              financial_year=missing_year,
+              portfolio=previous_portfolio,
+              losses=previous_statement.carried_losses
+              if previous_statement else None)
+          statements.append((missing_year, missing_statement))
+          statements_dict[missing_year] = missing_statement
+          previous_statement = statements[-1][1]
+          previous_portfolio = copy.deepcopy(previous_statement.portfolio)
+
       statement = AnnualStatement(
           financial_year=tran.financial_year,
           portfolio=previous_portfolio,
