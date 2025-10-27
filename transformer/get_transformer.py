@@ -8,12 +8,14 @@ to the standard pycgt CSV format.
 from .bitstamp_transformer import BitstampTransformer
 from .independent_reserve_transformer import IndependentReserveTransformer
 from .nexo_transformer import NexoTransformer
+from .exodus_transformer import ExodusTransformer
 
 # Registry of available transformers
 TRANSFORMERS = {
     'bitstamp': BitstampTransformer,
     'independentreserve': IndependentReserveTransformer,
     'nexo': NexoTransformer,
+    'exodus': ExodusTransformer,
 }
 
 def get_transformer(exchange_type, input_files, output_file):
