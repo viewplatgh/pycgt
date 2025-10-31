@@ -9,6 +9,7 @@ from .bitstamp_transformer import BitstampTransformer
 from .independent_reserve_transformer import IndependentReserveTransformer
 from .nexo_transformer import NexoTransformer
 from .exodus_transformer import ExodusTransformer
+from .etherscan_transformer import EtherscanTransformer
 
 # Registry of available transformers
 TRANSFORMERS = {
@@ -16,6 +17,7 @@ TRANSFORMERS = {
     'independentreserve': IndependentReserveTransformer,
     'nexo': NexoTransformer,
     'exodus': ExodusTransformer,
+    'etherscan': EtherscanTransformer,
 }
 
 def get_transformer(exchange_type, input_files, output_file):
