@@ -80,7 +80,7 @@ class ExodusTransformer(BaseTransformer):
             return
 
         # Create deposit transaction
-        tran = self._create_base_transaction(datetime_str, 'deposit', row)
+        tran = self._create_base_transaction('Exodus', datetime_str, 'deposit')
         tran['Type'] = 'Deposit'
         tran[in_currency.upper()] = in_amount
 
@@ -108,7 +108,7 @@ class ExodusTransformer(BaseTransformer):
             return
 
         # Create withdrawal transaction
-        tran = self._create_base_transaction(datetime_str, 'withdrawal', row)
+        tran = self._create_base_transaction('Exodus', datetime_str, 'withdrawal')
         tran['Type'] = 'Withdrawal'
         # Make amount positive (Exodus uses negative amounts)
         tran[out_currency.upper()] = out_amount.lstrip('-')
@@ -168,11 +168,3 @@ class ExodusTransformer(BaseTransformer):
 
         return comment_parts
 
-    def _create_base_transaction(self, datetime_str, operation, row):
-        """Create a base transaction dict with common fields"""
-        tran = {field: '' for field in FIELDS.keys()}
-        tran['Exchange'] = 'Exodus'
-        tran['Datetime'] = datetime_str
-        tran['Operation'] = operation
-
-        return tran
