@@ -202,3 +202,12 @@ class BaseTransformer(ABC):
 
         logger.info(f"Converted {len(transactions)} transactions")
         return transactions
+
+    def _create_base_transaction(self, exchange, datetime_str, operation):
+        """Create a base transaction dict with common fields"""
+        tran = {field: '' for field in FIELDS.keys()}
+        tran['Exchange'] = exchange
+        tran['Datetime'] = datetime_str
+        tran['Operation'] = operation
+
+        return tran
