@@ -18,7 +18,7 @@ forex_query_chunk_days = 180
 fiats = ["usd", "aud"]
 cryptos = ["btc", "ltc", "nmc", "eth", "bch", "link", "usdt", "nexo", "sol", "trx", "ton"]
 stablecoins = ["usdt"]
-operations = ["buy", "sell", "deposit", "withdrawal", "gain", "loss"]
+operations = ["buy", "sell", "deposit", "withdrawal", "gain", "loss", "transfer", "approve"]
 parse_datetime_formats = ["%m/%d/%Y %H:%M:%S", "%b. %d, %Y, %I:%M %p", "%b. %d, %Y, %H:%M %p", "%Y-%m-%d %H:%M:%S", "%d %b %Y %H:%M:%S %z"]
 
 [data.fields]

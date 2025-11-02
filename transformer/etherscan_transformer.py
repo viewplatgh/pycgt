@@ -1,7 +1,6 @@
 import csv
-from datetime import datetime, timezone
 from transformer.base_transformer import BaseTransformer
-from shared_def import FIELDS
+from shared_def import CRYPTOS, STABLECOINS
 from logger import logger
 from transaction import float_parser, datetime_parser
 
@@ -129,14 +128,80 @@ class EtherscanTransformer(BaseTransformer):
 
         Args:
             general_row: Dict representing the general transaction row
-            erc20_rows: List of dicts representing associated ERC-20 rows
+            erc20_rows: List of dicts representing associated ERC-20 rows (length = 2)
 
         Returns:
             one pycgt transaction
         """
-        # TODO: combine into one transaction, it's to buy erc20_rows[1]['TokenSymbol'] & sell erc20_rows[0]['TokenSymbol']
-        # TODO: figure out PAIR, transaction fees, ETHUSD rate, etc.
-        tran = self._prepare_transaction(general_row, 'buy')
+        # Assumption: erc20_rows[0] is disposed (sold), erc20_rows[1] is acquired (bought)
+        sold_row = erc20_rows[0]
+        bought_row = erc20_rows[1]
+
+        # Extract sold token info
+        sold_symbol = sold_row.get('TokenSymbol', '').strip().upper()
+        sold_value = float_parser(sold_row.get('TokenValue', '0'))
+
+        # Extract bought token info
+        bought_symbol = bought_row.get('TokenSymbol', '').strip().upper()
+        bought_value = float_parser(bought_row.get('TokenValue', '0'))
+
+        # Determine which symbol is the "crypto" (not stablecoin) and which is the "fiat/stablecoin"
+        cryptos_upper = [c.upper() for c in CRYPTOS]
+        stablecoins_upper = [s.upper() for s in STABLECOINS]
+
+        # Find which symbol is crypto (but not stablecoin) - that goes on left of pair
+        sold_is_crypto = sold_symbol in cryptos_upper and sold_symbol not in stablecoins_upper
+        bought_is_crypto = bought_symbol in cryptos_upper and bought_symbol not in stablecoins_upper
+
+        if sold_is_crypto and not bought_is_crypto:
+            # Left is crypto (sold), right is fiat/stablecoin (bought) → SELL
+            left_symbol = sold_symbol
+            right_symbol = bought_symbol
+            operation = 'sell'
+        elif bought_is_crypto and not sold_is_crypto:
+            # Left is crypto (bought), right is fiat/stablecoin (sold) → BUY
+            left_symbol = bought_symbol
+            right_symbol = sold_symbol
+            operation = 'buy'
+        else:
+            # Both are crypto or both are stablecoin - default to bought as left
+            left_symbol = bought_symbol
+            right_symbol = sold_symbol
+            operation = 'buy'
+
+        # Build PAIR: leftcrypto + rightfiat (e.g., "linkusdt")
+        pair = (left_symbol + right_symbol).lower()
+
+        tran = self._prepare_transaction(general_row, operation)
+        tran['Pair'] = pair
+
+        # Add token amounts
+        if sold_symbol and sold_value > 0:
+            tran[sold_symbol] = str(sold_value)
+        if bought_symbol and bought_value > 0:
+            tran[bought_symbol] = str(bought_value)
+
+        # Extract fee information
+        fee_eth = float_parser(general_row.get('TxnFee(ETH)', '0'))
+        fee_usd = float_parser(general_row.get('TxnFee(USD)', '0'))
+
+        if fee_eth > 0:
+            tran['Fee(ETH)'] = str(fee_eth)
+        if fee_usd > 0:
+            tran['Fee(USD)'] = str(fee_usd)
+
+        # Extract ETHUSD rate
+        eth_usd_rate = float_parser(general_row.get('Historical $Price/Eth', '0'))
+        if eth_usd_rate > 0:
+            tran['ETHUSD'] = str(eth_usd_rate)
+
+        # Build comments
+        tx_hash = general_row.get('Transaction Hash', '')
+        blockno = general_row.get('Blockno', '')
+        method = general_row.get('Method', '')
+
+        tran['Comments'] = f'Etherscan Swap ({method}): {sold_value} {sold_symbol} → {bought_value} {bought_symbol}; Hash: {tx_hash}; Block: {blockno}'
+
         return tran
 
     def _transform_one_general_transaction(self, general_row):
@@ -149,8 +214,42 @@ class EtherscanTransformer(BaseTransformer):
         Returns:
             one pycgt transaction
         """
-        tran = self._prepare_transaction(general_row, 'deposit') # regard any kind of money moving as 'deposit'
-        # TODO: figure out transaction fees, ETHUSD rate, Comments etc.
+        # Determine operation from Method field
+        method = general_row.get('Method', '').strip()
+        operation = method.lower() if method.lower() in ['deposit', 'transfer', 'approve'] else 'transfer'
+
+        tran = self._prepare_transaction(general_row, operation)
+
+        # Handle ETH amounts (only one of Value_IN or Value_OUT will be non-zero)
+        value_in = float_parser(general_row.get('Value_IN(ETH)', '0'))
+        value_out = float_parser(general_row.get('Value_OUT(ETH)', '0'))
+        eth_amount = value_in if value_in > 0 else value_out
+
+        if eth_amount > 0:
+            tran['ETH'] = str(eth_amount)
+
+        # Extract fee information
+        fee_eth = float_parser(general_row.get('TxnFee(ETH)', '0'))
+        fee_usd = float_parser(general_row.get('TxnFee(USD)', '0'))
+
+        if fee_eth > 0:
+            tran['Fee(ETH)'] = str(fee_eth)
+        if fee_usd > 0:
+            tran['Fee(USD)'] = str(fee_usd)
+
+        # Extract ETHUSD rate
+        eth_usd_rate = float_parser(general_row.get('Historical $Price/Eth', '0'))
+        if eth_usd_rate > 0:
+            tran['ETHUSD'] = str(eth_usd_rate)
+
+        # Build comments
+        tx_hash = general_row.get('Transaction Hash', '')
+        blockno = general_row.get('Blockno', '')
+        from_addr = general_row.get('From', '')[:10]
+        to_addr = general_row.get('To', '')[:10]
+
+        tran['Comments'] = f'Etherscan {method}: {eth_amount} ETH; Hash: {tx_hash}; Block: {blockno}; From: {from_addr}...; To: {to_addr}...'
+
         return tran
 
     def _transform_joinable_transfer_transaction(self, general_row, erc20_row):
@@ -164,8 +263,24 @@ class EtherscanTransformer(BaseTransformer):
         Returns:
             pycgt transaction dict
         """
-        tran = self._prepare_transaction(general_row, 'deposit') # regard any kind of money moving as 'deposit'
-        # TODO: figure out transaction fees, ETHUSD rate, Comments etc. may call _transform_one_general_transaction to avoid duplication
+        # Use the general transaction transformation as base
+        tran = self._transform_one_general_transaction(general_row)
+
+        # Add ERC-20 token information
+        token_symbol = erc20_row.get('TokenSymbol', '').strip().upper()
+        token_value = float_parser(erc20_row.get('TokenValue', '0'))
+        token_name = erc20_row.get('TokenName', '').strip()
+        contract_address = erc20_row.get('ContractAddress', '')
+        from_addr = erc20_row.get('From', '')[:10]
+        to_addr = erc20_row.get('To', '')[:10]
+
+        # Add token amount to transaction
+        if token_symbol and token_value > 0:
+            tran[token_symbol] = str(token_value)
+
+        # Enhance comments with token transfer info
+        tran['Comments'] += f'; Token: {token_value} {token_symbol} ({token_name}); Token From: {from_addr}...; Token To: {to_addr}...; Contract: {contract_address}'
+
         return tran
     
     def _join_transform_general_and_erc20_by_hash(self, general_files, erc20_grouped):

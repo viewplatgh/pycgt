@@ -195,6 +195,10 @@ To add support for new assets:
 
 ## Extending the Application
 
+### Code style and convention
+
+- import module at top section of a file rather than importing inline in a function
+
 ### Adding New Exchange Transformers
 
 To add support for a new exchange:

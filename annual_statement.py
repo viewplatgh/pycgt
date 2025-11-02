@@ -73,8 +73,8 @@ class AnnualStatement(dict):
         self.gains.extend(gains)
       if losses:
         self.losses.extend(losses)
-    elif tran.operation in ['deposit', 'withdrawal']:
-      gains, losses = self.portfolio.process_deposit_withdrawal_transaction(tran)
+    elif tran.operation in ['deposit', 'withdrawal', 'transfer', 'approve']:
+      gains, losses = self.portfolio.process_fees_incurred_transactions(tran)
       if gains:
         self.gains.extend(gains)
       if losses:
