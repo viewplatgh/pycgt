@@ -80,7 +80,7 @@ class ExodusTransformer(BaseTransformer):
             return
 
         # Create deposit transaction
-        tran = self._create_base_transaction('Exodus', datetime_str, 'deposit')
+        tran = super()._create_base_transaction('Exodus', datetime_str, 'deposit')
         tran['Type'] = 'Deposit'
         tran[in_currency.upper()] = in_amount
 
@@ -108,7 +108,7 @@ class ExodusTransformer(BaseTransformer):
             return
 
         # Create withdrawal transaction
-        tran = self._create_base_transaction('Exodus', datetime_str, 'withdrawal')
+        tran = super()._create_base_transaction('Exodus', datetime_str, 'withdrawal')
         tran['Type'] = 'Withdrawal'
         # Make amount positive (Exodus uses negative amounts)
         tran[out_currency.upper()] = out_amount.lstrip('-')
