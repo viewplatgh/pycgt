@@ -68,33 +68,73 @@ class EtherscanTransformer(BaseTransformer):
         Returns:
             List of transaction dicts
         """
-        transactions = []
+        # First pass: collect all dates to query ETH/USD prices in bulk
+        dates = set()
+        rows_data = []
 
         with open(file_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-
             for row in reader:
-                # Extract data
                 blockno = row.get('Blockno', '').strip()
                 datetime_utc = row.get('DateTime (UTC)', '').strip()
                 eth_value = row.get('Value', '').strip().replace(' ETH', '').strip()
 
-                eth_amount = float_parser(eth_value)
+                tran_datetime = datetime_parser(datetime_utc)
+                dates.add(tran_datetime.date())
 
-                # Transaction 1: "gain" operation (taxable income)
-                gain_tran = super()._create_base_transaction('Etherscan', datetime_utc, 'gain')
-                gain_tran['Type'] = 'Interest'
-                gain_tran['ETH'] = str(eth_amount)
-                gain_tran['Comments'] = f'Etherscan beacon withdrawal: {eth_amount} ETH; Blockno: {blockno}'
-                transactions.append(gain_tran)
+                rows_data.append({
+                    'blockno': blockno,
+                    'datetime_utc': datetime_utc,
+                    'eth_amount': float_parser(eth_value),
+                    'date': tran_datetime.date()
+                })
 
-                # Transaction 2: "buy" operation (establishes cost base)
-                buy_tran = super()._create_base_transaction('Etherscan', datetime_utc, 'buy')
-                buy_tran['Type'] = 'Interest'
-                buy_tran['Pair'] = 'ethusd'
-                buy_tran['ETH'] = str(eth_amount)
-                buy_tran['Comments'] = f'Etherscan beacon withdrawal (cost base): {eth_amount} ETH; Blockno: {blockno}'
-                transactions.append(buy_tran)
+        # Bulk query ETH/USD prices for all dates
+        ethusd_prices = {}
+        if dates:
+            min_date = min(dates)
+            max_date = max(dates)
+            logger.info(f"Querying ETHUSD prices for {len(dates)} dates ({min_date} to {max_date})")
+            ethusd_prices = self.crypto_provider.query('ethusd', min_date, max_date)
+
+        # Second pass: create transactions using the queried prices
+        transactions = []
+        for row_data in rows_data:
+            blockno = row_data['blockno']
+            datetime_utc = row_data['datetime_utc']
+            eth_amount = row_data['eth_amount']
+            date_key = row_data['date'].isoformat()
+
+            ethusd_rate = ethusd_prices.get(date_key, 0)
+
+            if ethusd_rate == 0:
+                logger.warning(f"Missing ETHUSD price for {date_key}, cannot calculate USD value for withdrawal")
+                usd_value = 0
+            else:
+                usd_value = eth_amount * ethusd_rate
+
+            # Transaction 1: "gain" operation (taxable income)
+            gain_tran = super()._create_base_transaction('Etherscan', datetime_utc, 'gain')
+            gain_tran['Type'] = 'Interest'
+            gain_tran['ETH'] = str(eth_amount)
+            if usd_value > 0:
+                gain_tran['USD'] = str(usd_value)
+            if ethusd_rate > 0:
+                gain_tran['ETHUSD'] = str(ethusd_rate)
+            gain_tran['Comments'] = f'Etherscan beacon withdrawal: {eth_amount} ETH; Blockno: {blockno}'
+            transactions.append(gain_tran)
+
+            # Transaction 2: "buy" operation (establishes cost base)
+            buy_tran = super()._create_base_transaction('Etherscan', datetime_utc, 'buy')
+            buy_tran['Type'] = 'Interest'
+            buy_tran['Pair'] = 'ethusd'
+            buy_tran['ETH'] = str(eth_amount)
+            if usd_value > 0:
+                buy_tran['USD'] = str(usd_value)
+            if ethusd_rate > 0:
+                buy_tran['ETHUSD'] = str(ethusd_rate)
+            buy_tran['Comments'] = f'Etherscan beacon withdrawal (cost base): {eth_amount} ETH; Blockno: {blockno}'
+            transactions.append(buy_tran)
 
         return transactions
 
