@@ -187,7 +187,7 @@ class BaseTransformer(ABC):
                                 if existing_fee == 0:
                                     tran[fee_locale_fiat_field] = str(fee_locale_fiat_value)
                                 else:
-                                    logger.warning(f"Both {fee_locale_fiat_field} and {fee_crypto_field} having value in transaction on {date_key}, skiped auto-fill for it")
+                                    logger.info(f"Both {fee_locale_fiat_field} and {fee_crypto_field} having value in transaction on {date_key}, skiped auto-fill for it")
                             else:
                                 logger.warning(f"Missing {forexpair} rate for {date_key}, cannot convert {crypto_upper} fee to {locale_fiat_upper}")
                         else:
@@ -196,7 +196,7 @@ class BaseTransformer(ABC):
                             if existing_fee == 0:
                                 tran[fee_locale_fiat_field] = str(fee_usd_value)
                             else:
-                                logger.warning(f"Both {fee_locale_fiat_field} and {fee_crypto_field} having value in transaction on {date_key}, skiped auto-fill for it")
+                                logger.info(f"Both {fee_locale_fiat_field} and {fee_crypto_field} having value in transaction on {date_key}, skiped auto-fill for it")
                     else:
                         logger.warning(f"Missing {crypto}usd price for {date_key}, cannot convert {crypto_upper} fee to {locale_fiat_upper}")
 

@@ -82,14 +82,14 @@ class EtherscanTransformer(BaseTransformer):
                 eth_amount = float_parser(eth_value)
 
                 # Transaction 1: "gain" operation (taxable income)
-                gain_tran = self._create_base_transaction('Etherscan', datetime_utc, 'gain', row)
+                gain_tran = super()._create_base_transaction('Etherscan', datetime_utc, 'gain')
                 gain_tran['Type'] = 'Interest'
                 gain_tran['ETH'] = str(eth_amount)
                 gain_tran['Comments'] = f'Etherscan beacon withdrawal: {eth_amount} ETH; Blockno: {blockno}'
                 transactions.append(gain_tran)
 
                 # Transaction 2: "buy" operation (establishes cost base)
-                buy_tran = self._create_base_transaction('Etherscan', datetime_utc, 'buy', row)
+                buy_tran = super()._create_base_transaction('Etherscan', datetime_utc, 'buy')
                 buy_tran['Type'] = 'Interest'
                 buy_tran['Pair'] = 'ethusd'
                 buy_tran['ETH'] = str(eth_amount)
