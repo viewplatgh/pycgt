@@ -120,7 +120,7 @@ class Portfolio(dict):
       logger.warning('Skipped non crypto trading, left2right:{}'.format(tran.left2right))
     return (None, None)
   
-  def process_deposit_withdrawal_transaction(self, tran):
+  def process_fees_incurred_transactions(self, tran):
     """ Handle fee paid in crypto in non buy/sell transaction
     Regard it as tax event of disposing the crypto as well
     the same as sell, will result in gain or loss
