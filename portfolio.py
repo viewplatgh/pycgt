@@ -18,6 +18,31 @@ class Portfolio(dict):
     for item in CRYPTOS:
       self[item] = []
 
+  def _dispose_position_for_gain_loss(self, position, volume, disposing_price, transaction, crypto_fee_field, gain_loss, gains, losses):
+    """ Shared helper function to dispose position for gain/loss calculation """
+    gain_loss.position = position
+    gain_loss.left_date = position.transaction.datetime
+    gain_loss.right_date = transaction.datetime
+    matching = min(position.volume, volume)
+    position.volume -= matching
+    volume -= matching
+    gain_loss.matched = matching
+    gain_loss.fiat = (disposing_price - position.price) * matching
+    gains.append(gain_loss) if gain_loss.gain else losses.append(gain_loss)
+    print(gain_loss.brief_csv)
+
+    incidental_loss = GainLoss()
+    incidental_loss.description = 'Incidental loss because of fee paid in crypto'
+    incidental_loss.transaction = transaction
+    incidental_loss.transaction.volume = transaction[crypto_fee_field]
+    # the full market value of crypto paid as fee is deductible as incidental loss
+    incidental_loss.fiat = -abs(disposing_price * matching)
+    incidental_loss.left_date = position.transaction.datetime
+    incidental_loss.right_date = transaction.datetime
+    losses.append(incidental_loss)
+    print(incidental_loss.brief_csv)
+    return volume
+
   def process_buy_sell_transaction(self, tran):
     """ Will either generate portfolio or tax capital gain/loss """
     if tran.left2right[1] in CRYPTOS:
@@ -78,27 +103,7 @@ class Portfolio(dict):
               gl.transaction[LOCALE_FIAT.lower()] = fee_fiat
               gl.transaction[crypto_fee_field] = gl.transaction[fiat_fee_field] = 0
 
-              gl.position = item
-              gl.left_date = item.transaction.datetime
-              gl.right_date = tran.datetime
-              matching = min(item.volume, volume)
-              item.volume -= matching
-              volume -= matching
-              gl.matched = matching
-              gl.fiat = (disposing_price - item.price) * matching
-              gains.append(gl) if gl.gain else losses.append(gl)
-              print(gl.brief_csv)
-
-              incidental_loss = GainLoss()
-              incidental_loss.description = 'Incidental loss because of fee paid in crypto'
-              incidental_loss.transaction = tran
-              incidental_loss.transaction.volume = tran[crypto_fee_field]
-              # the full market value of crypto paid as fee is deductible as incidental loss
-              incidental_loss.fiat = -abs(disposing_price * matching)
-              incidental_loss.left_date = item.transaction.datetime
-              incidental_loss.right_date = tran.datetime
-              losses.append(incidental_loss)
-              print(incidental_loss.brief_csv)
+              volume = self._dispose_position_for_gain_loss(item, volume, disposing_price, tran, crypto_fee_field, gl, gains,losses)
               if volume < PRECISION_THRESHOLD:
                 break
           if volume > PRECISION_THRESHOLD:
@@ -143,27 +148,8 @@ class Portfolio(dict):
             if item.volume > 0:
               gl = GainLoss()
               gl.transaction = Transaction.mock_sell_transaction(tran)
-              gl.position = item
-              gl.left_date = item.transaction.datetime
-              gl.right_date = tran.datetime
-              matching = min(item.volume, volume)
-              item.volume -= matching
-              volume -= matching
-              gl.matched = matching
-              gl.fiat = (disposing_price - item.price) * matching
-              gains.append(gl) if gl.gain else losses.append(gl)
-              print(gl.brief_csv)
-
-              incidental_loss = GainLoss()
-              incidental_loss.description = 'Incidental loss because of fee paid in crypto'
-              incidental_loss.transaction = tran
-              incidental_loss.transaction.volume = tran[crypto_fee_field]
-              # the full market value of crypto paid as fee is deductible as incidental loss
-              incidental_loss.fiat = -abs(disposing_price * matching)
-              incidental_loss.left_date = item.transaction.datetime
-              incidental_loss.right_date = tran.datetime
-              losses.append(incidental_loss)
-              print(incidental_loss.brief_csv)
+              
+              volume = self._dispose_position_for_gain_loss(item, volume, disposing_price, tran, crypto_fee_field, gl, gains,losses)
               if volume < PRECISION_THRESHOLD:
                 break
           if volume > PRECISION_THRESHOLD:
