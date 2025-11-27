@@ -20,17 +20,20 @@ def process_cgt_report(csv_files):
   statements = []
   statements_dict = {}
   locale_fiat_lower = LOCALE_FIAT.lower()
-  print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
-      'gain_or_loss', 'datetime', locale_fiat_lower, 'discountable', 'description',
+  print('{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
+      'gain_or_loss', 'datetime', locale_fiat_lower,
+      'discountable', 'description',
       'buy_transaction.{}'.format(locale_fiat_lower),
       'buy_transaction.volume', 'buy_transaction.datetime',
-      'buy_transaction.operation', 'buy_transaction.pair', 'buy_transaction.usd',
-      'position.asset', 'position.{}'.format(locale_fiat_lower), 'position.initial_volume',
+      'buy_transaction.operation', 'buy_transaction.pair',
+      'buy_transaction.usd', 'buy_transaction.comments',
+      'position.asset', 'position.{}'.format(locale_fiat_lower),
+      'position.initial_volume',
       'position.price', 'position.volume', 'matched',
       'sell_transaction.{}'.format(locale_fiat_lower),
       'sell_transaction.volume', 'sell_transaction.datetime',
       'sell_transaction.operation', 'sell_transaction.pair',
-      'sell_transaction.usd'))
+      'sell_transaction.usd', 'sell_transaction.comments'))
 
   parsed_trans = []
   for item in csv_files:
