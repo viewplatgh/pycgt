@@ -169,7 +169,7 @@ class Portfolio(dict):
     if fee_fiat > 0:
       # no fee paid in crypto, just create loss based on fee_fiat
       incidental_loss = GainLoss()
-      incidental_loss.description = 'Incidental loss because of fee paid in fiat'
+      incidental_loss.description = 'Incidental loss because of fee paid in fiat only'
       incidental_loss.transaction = tran
       incidental_loss.fiat = -abs(fee_fiat)
       incidental_loss.left_date = incidental_loss.right_date = tran.datetime
