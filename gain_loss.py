@@ -106,6 +106,7 @@ class GainLoss(dict):
         '{}'.format(buy_transaction['operation']),  # buy_transaction.operation
         '{}'.format(buy_transaction['pair']),  # buy_transaction.pair
         '{}'.format(buy_transaction['usd']),  # buy_transaction.usd
+        '"{}"'.format(buy_transaction['comments']),  # buy_transaction.comments
         '{}'.format(position['asset']),  # position.asset
         '{}'.format(position.get(locale_fiat_lower, 'N/A')),  # position.fiat (uses locale-specific key)
         '{}'.format(position['initial_volume']),  # position.initial_volume
@@ -118,7 +119,8 @@ class GainLoss(dict):
         '{}'.format(
             sell_transaction['operation']),  # sell_transaction.operation
         '{}'.format(sell_transaction['pair']),  # sell_transaction.pair
-        '{}'.format(sell_transaction['usd'])  # sell_transaction.usd
+        '{}'.format(sell_transaction['usd']),  # sell_transaction.usd
+        '"{}"'.format(sell_transaction['comments'])  # sell_transaction.comments
     ]
 
     return ','.join(row)

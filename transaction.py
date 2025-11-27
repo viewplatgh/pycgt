@@ -141,7 +141,7 @@ class Transaction(dict):
     else:
       return self.datetime.year + 1
 
-  BRIEF_KEYS = ['datetime', 'operation', 'pair', LOCALE_FIAT.lower(), 'usd', 'volume']
+  BRIEF_KEYS = ['datetime', 'operation', 'pair', LOCALE_FIAT.lower(), 'usd', 'comments', 'volume']
 
   @property
   def brief(self):
