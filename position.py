@@ -1,7 +1,6 @@
 import copy
 from shared_def import LOCALE_FIAT
 
-
 class Position(dict):
   def __init__(self, transaction):
     super(Position, self).__init__()

@@ -1,5 +1,5 @@
 import pprint
-from shared_def import LOCALE_FIAT, FIATS, CRYPTOS, POSITION_ACCOUNTING, PRECISION_THRESHOLD
+from shared_def import LOCALE_FIAT, CRYPTOS, POSITION_ACCOUNTING, PRECISION_THRESHOLD
 from gain_loss import GainLoss
 from position import Position
 from transaction import Transaction
