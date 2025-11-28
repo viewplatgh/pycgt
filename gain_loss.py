@@ -63,6 +63,14 @@ class GainLoss(dict):
     self['right_date'] = value
 
   @property
+  def matched(self):
+    return self['matched']
+
+  @matched.setter
+  def matched(self, value):
+    self['matched'] = value
+
+  @property
   def description(self):
     return self['description']
 
@@ -71,12 +79,9 @@ class GainLoss(dict):
     self['description'] = value
 
   @property
-  def matched(self):
-    return self['matched']
-
-  @matched.setter
-  def matched(self, value):
-    self['matched'] = value
+  def is_cgt(self):
+    """ Return if this gain/loss is under capital gain tax category"""
+    return self.matched != 0
 
   @property
   def brief(self):
