@@ -1,5 +1,5 @@
 import pprint
-from shared_def import CRYPTOS, LOCALE_FIAT
+from shared_def import CRYPTOS, LOCALE_FIAT, CGT_DISCOUNT_RATE
 from portfolio import Portfolio
 from gain_loss import GainLoss
 
@@ -142,10 +142,10 @@ class AnnualStatement(dict):
     """Calculate net cgt gain after applying losses"""
     after_non_discountable = self.non_discountable_cgt_gains_sum + losses
     if (after_non_discountable >= 0):
-      return self.discountable_cgt_gains_sum / 2. + after_non_discountable
+      return self.discountable_cgt_gains_sum * CGT_DISCOUNT_RATE + after_non_discountable
     else:
       after_discountable = self.discountable_cgt_gains_sum + after_non_discountable
-      return after_discountable if after_discountable < 0 else after_discountable / 2.
+      return after_discountable if after_discountable < 0 else after_discountable * CGT_DISCOUNT_RATE
 
   @property
   def net_cgt_gain(self):    

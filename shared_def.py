@@ -18,6 +18,7 @@ FOREX_QUERY_CHUNK_DAYS = config['options']['forex_query_chunk_days']
 
 LOCALE_FIAT = config['locale']['fiat']
 FY_START_MONTH = config['locale']['fy_start_month']
+CGT_DISCOUNT_RATE = config['locale']['cgt_discount_rate']
 
 
 def _build_fields():

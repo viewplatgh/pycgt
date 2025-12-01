@@ -1,6 +1,7 @@
 [locale]
 fiat = "aud"
 fy_start_month = 7
+cgt_discount_rate = 0.5
 
 [logging]
 level = "INFO"
