@@ -120,12 +120,12 @@ class AnnualStatement(dict):
     return sum([item.fiat for item in self.gains if item.discountable and item.is_cgt], 0)
   
   @property
-  def taxable_cgt_gains_sum(self):
-    return self.discountable_cgt_gains_sum / 2. + self.non_discountable_cgt_gains_sum
+  def cgt_gains_sum(self):
+    return sum([item.fiat for item in self.gains if item.is_cgt], 0)
   
   @property
-  def total_taxable_gains_sum(self):
-    return self.taxable_cgt_gains_sum + self.non_cgt_gains_sum
+  def gains_sum(self):
+    return sum([item.fiat for item in self.gains], 0)
 
   @property
   def this_year_losses(self):
@@ -136,47 +136,57 @@ class AnnualStatement(dict):
   @property
   def losses_sum(self):
     return sum([item.fiat for item in self.losses], 0)
+  
+
+  def _calculate_net_cgt_gain(self, losses):
+    """Calculate net cgt gain after applying losses"""
+    after_non_discountable = self.non_discountable_cgt_gains_sum + losses
+    if (after_non_discountable >= 0):
+      return self.discountable_cgt_gains_sum / 2. + after_non_discountable
+    else:
+      after_discountable = self.discountable_cgt_gains_sum + after_non_discountable
+      return after_discountable if after_discountable < 0 else after_discountable / 2.
 
   @property
-  def net_gain(self):
-    return self.total_taxable_gains_sum + self.losses_sum
+  def net_cgt_gain(self):    
+    return self._calculate_net_cgt_gain(self.losses_sum)
 
   @property
   def carried_losses(self):
-    if self.net_gain < 0:
+    if self.net_cgt_gain < 0:
       gl = GainLoss()
-      gl.fiat = self.net_gain
+      gl.fiat = self.net_cgt_gain
       return [gl]
     else:
       return None
 
   @property
-  def net_gain_excluding_previous_year_loss(self):
-    return self.total_taxable_gains_sum + self.this_year_losses
+  def net_cgt_gain_excluding_previous_year_loss(self):
+    return self._calculate_net_cgt_gain(self.this_year_losses)
   
   def report(self):
     fiat_currency = LOCALE_FIAT.upper()
     print('========================================================')
     print('Tax return report for year: {}(FY{}-{})'.format(self.financial_year, self.financial_year - 1, self.financial_year % 100))
-    print('Discountable cgt gains of the year: ${:.2f} {}'.format(
+    print('Discountable CGT gains of the year: ${:.2f} {}'.format(
         self.discountable_cgt_gains_sum, fiat_currency))
-    print('Non-discountable cgt gains of the year: ${:.2f} {}'.format(
+    print('Non-discountable CGT gains of the year: ${:.2f} {}'.format(
         self.non_discountable_cgt_gains_sum, fiat_currency))
-    print('Taxable cgt gains of the year: ${:.2f} {}'.format(
-        self.taxable_cgt_gains_sum, fiat_currency))
-    print('Taxable other gains of the year: ${:.2f} {}'.format(self.non_cgt_gains_sum, fiat_currency))
-    print('Total taxable gains of the year: ${:.2f} {}'.format(
-        self.total_taxable_gains_sum, fiat_currency))
-    print('Losses carried from previous year: - ${:.2f} {}'.format(
+    print('CGT gains of the year: ${:.2f} {}'.format(
+        self.cgt_gains_sum, fiat_currency))
+    print('Other gains(non CGT) of the year: ${:.2f} {}'.format(self.non_cgt_gains_sum, fiat_currency))
+    print('Sum of gains of the year: ${:.2f} {}'.format(
+        self.gains_sum, fiat_currency))
+    print('Capital losses carried from previous year: - ${:.2f} {}'.format(
         abs(self.previous_year_loss.fiat if self.previous_year_loss else 0), fiat_currency))
-    print('Losses of this year only: - ${:.2f} {}'.format(
+    print('Capital losses of this year only: - ${:.2f} {}'.format(
         abs(self.this_year_losses), fiat_currency))
-    print('Total losses at the end of the year: - ${:.2f} {}'.format(
+    print('Total capital losses at the end of the year: - ${:.2f} {}'.format(
         abs(self.losses_sum), fiat_currency))
-    print('Net gains (this year only): {} ${:.2f} {}'.format(
-        '-' if self.net_gain_excluding_previous_year_loss < 0 else '', abs(self.net_gain_excluding_previous_year_loss), fiat_currency))
-    print('Net gains (including carried losses from previous year): {} ${:.2f} {}'.format(
-        '-' if self.net_gain < 0 else '', abs(self.net_gain), fiat_currency))
+    print('Net CGT gains (this year only): {} ${:.2f} {}'.format(
+        '-' if self.net_cgt_gain_excluding_previous_year_loss < 0 else '', abs(self.net_cgt_gain_excluding_previous_year_loss), fiat_currency))
+    print('Net CGT gains (including carried losses from previous year): {} ${:.2f} {}'.format(
+        '-' if self.net_cgt_gain < 0 else '', abs(self.net_cgt_gain), fiat_currency))
     print('Portfolio of the year:')
     for crypto in CRYPTOS:
       if crypto in self.portfolio:
