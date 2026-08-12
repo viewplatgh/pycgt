@@ -66,6 +66,26 @@ python main.py -t -x bitstamp -o converted.csv Bitstamp-Export.csv
 
 If `-o` is not specified, output filename is auto-generated as `[input-basename]-transformed-[random].csv`.
 
+### Merge Mode
+
+Consolidate multiple pycgt-formatted CSV files into one datetime-sorted file:
+
+```bash
+python main.py -m [-o OUTPUT] INPUT_FILES...
+```
+
+Example:
+
+```bash
+python main.py -m -o pycgt-history.csv bitstamp-transformed.csv nexo-transformed.csv
+```
+
+Inputs may have different column sets (the canonical header is derived from
+config and grows as cryptos are added); merge mode maps each header onto the
+current canonical header. Values are copied verbatim, all data rows are kept
+(including ones the report skips), and duplicate rows are warned about but not
+removed. `-m` and `-t` are mutually exclusive.
+
 ## Configuration
 
 All settings are centralized in `config.toml`:
@@ -97,7 +117,8 @@ All settings are centralized in `config.toml`:
 
 **Core Processing:**
 
-- **main.py**: Entry point with argument parsing, supports both CGT report generation and exchange log transformation
+- **main.py**: Entry point with argument parsing, supports CGT report generation, exchange log transformation, and pycgt file consolidation
+- **consolidator.py**: Merges multiple pycgt-format CSVs with differing headers into one canonical-header, datetime-sorted file
 - **config_loader.py**: Loads and manages configuration from config.toml (Python 3.11+ uses native tomllib, older versions use toml package)
 - **shared_def.py**: Imports configuration and exposes it as module constants (CRYPTOS, FIATS, LOCALE_FIAT, etc.)
 - **transaction.py**: Handles parsing and validation of individual trading transactions from CSV rows with configurable datetime parsing

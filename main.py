@@ -8,6 +8,7 @@ from annual_statement import AnnualStatement
 from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS, LOCALE_FIAT
 
 from transformer import get_transformer
+from consolidator import consolidate
 from logger import logger
 from utils import generate_default_output_filename
 
@@ -113,6 +114,23 @@ def transform_logs(csv_files, exchange_type, output_file):
     raise
 
 
+def merge_logs(csv_files, output_file):
+  """Consolidate pycgt-formatted CSV files into a single file"""
+
+  logger.info(f"Consolidating {len(csv_files)} pycgt-formatted file(s)")
+  logger.info(f"Output will be written to: {output_file}")
+
+  try:
+    consolidate(csv_files, output_file)
+    logger.info("Consolidation completed successfully")
+  except ValueError as e:
+    logger.error(str(e))
+    sys.exit(1)
+  except Exception as e:
+    logger.error(f"Consolidation failed: {e}")
+    raise
+
+
 def main():
   """Main entry point with argument parsing"""
   parser = argparse.ArgumentParser(
@@ -128,18 +146,26 @@ Examples:
 
   # Transform with auto-generated output filename:
   python main.py -t -x bitstamp input.csv
+
+  # Consolidate several pycgt-formatted files into one datetime-sorted file:
+  python main.py -m -o consolidated.csv file1.csv file2.csv
       """)
 
   parser.add_argument('files', nargs='+', metavar='FILE',
                       help='CSV file(s) to process')
   parser.add_argument('-t', '--transform', action='store_true',
                       help='Transform exchange logs to pycgt format')
+  parser.add_argument('-m', '--merge', action='store_true',
+                      help='Consolidate pycgt-formatted CSV files into a single datetime-sorted file')
   parser.add_argument('-x', '--exchange', type=str, metavar='EXCHANGE',
                       help='Exchange type (e.g., bitstamp) - required with -t')
   parser.add_argument('-o', '--output', type=str, metavar='OUTPUT',
-                      help='Output filename for transformed CSV (default: [first-input]-transformed-[random].csv)')
+                      help='Output filename for transformed/consolidated CSV (default: [first-input]-transformed-[random].csv)')
 
   args = parser.parse_args()
+
+  if args.transform and args.merge:
+    parser.error('-t/--transform and -m/--merge are mutually exclusive')
 
   # Validate transform mode arguments
   if args.transform:
@@ -153,10 +179,20 @@ Examples:
       logger.info(f"No output file specified, using default: {output_file}")
 
     transform_logs(args.files, args.exchange, output_file)
+  elif args.merge:
+    if args.exchange:
+      parser.error('-x/--exchange can only be used with -t/--transform')
+
+    output_file = args.output
+    if not output_file:
+      output_file = generate_default_output_filename(args.files[0])
+      logger.info(f"No output file specified, using default: {output_file}")
+
+    merge_logs(args.files, output_file)
   else:
     # Default mode: CGT report generation
     if args.exchange or args.output:
-      parser.error('-x/--exchange and -o/--output can only be used with -t/--transform')
+      parser.error('-x/--exchange and -o/--output can only be used with -t/--transform or -m/--merge')
     process_cgt_report(args.files)
 
 

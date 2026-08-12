@@ -120,7 +120,38 @@ python main.py -t -x bitstamp Bitstamp-Export.csv
 python main.py -t -x bitstamp -o converted.csv Bitstamp-Export.csv
 ```
 
-Supported exchanges: `bitstamp`
+Supported exchanges: `bitstamp`, `independentreserve`, `nexo`, `exodus`, `etherscan`
+
+### 4. Consolidate pycgt Files (Merge Mode)
+
+Merge several pycgt-formatted CSV files into a single datetime-sorted file. Useful
+once you accumulate one file per exchange per year and the report command grows
+unwieldy:
+
+```sh
+python main.py -m [-o OUTPUT] INPUT_FILES...
+```
+
+Example:
+
+```sh
+python main.py -m -o pycgt-history.csv bitstamp-transformed.csv nexo-transformed.csv
+```
+
+pycgt files written at different times carry different column sets, because the
+header is derived from `config.toml` and grows as cryptos are added. Merge mode
+maps every input header onto the current canonical header rather than blindly
+concatenating, so files of any vintage can be combined.
+
+Notes:
+
+- Cell values are copied verbatim; numbers are never reformatted.
+- All data rows are kept, including ones the report skips (unrecognised
+  `Operation` values), so the merged file stays a faithful archive.
+- Duplicate rows are reported as warnings but **not** removed - cumulative
+  exchange exports overlap with previously transformed history, and silently
+  dropping rows would be worse than flagging them. Review the warnings.
+- Columns with no mapping in `config.toml` are warned about if they carry data.
 
 ## Example Output
 
