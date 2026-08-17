@@ -21,15 +21,18 @@ class EtherscanTransformer(BaseTransformer):
     FILE_TYPE_GENERAL = 'general'
     FILE_TYPE_ERC20 = 'erc-20'
 
-    def __init__(self, input_files, output_file=None):
+    def __init__(self, input_files, output_file=None, start_date=None, end_date=None):
         """
         Initialize with list of input files (can be 1-4 files).
 
         Args:
             input_files: List of CSV file paths
             output_file: Optional output file path
+            start_date: Optional inclusive date lower bound for rows to keep
+            end_date: Optional inclusive date upper bound for rows to keep
         """
-        super().__init__(input_files[0] if len(input_files) == 1 else input_files, output_file)
+        super().__init__(input_files[0] if len(input_files) == 1 else input_files, output_file,
+                         start_date=start_date, end_date=end_date)
         self.input_files = input_files if isinstance(input_files, list) else [input_files]
 
     def _identify_file_type(self, csv_file_path):

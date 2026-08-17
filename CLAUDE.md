@@ -63,6 +63,19 @@ python main.py -t -x bitstamp -o converted.csv Bitstamp-Export.csv
 - `bitstamp` - Bitstamp transaction export format
 - `independentreserve` - Independent Reserve transaction export format
 - `nexo` - Nexo transaction export format
+- `exodus` - Exodus wallet export format
+- `etherscan` - Etherscan exports; pass the transactions, ERC-20 and beacon-withdrawal
+  files for one address together (types detected from headers, order irrelevant)
+- `electrum` - Electrum wallet history export. Note its `timestamp` column is the
+  exporting machine's LOCAL time and is converted to UTC by the transformer
+- `kraken` - Kraken spot ledger export (deposit/withdrawal/earn rows; trades not yet handled)
+- `phoenix` - Phoenix wallet payment history; fiat amounts are taken from the export
+- `umbrel` - Umbrel/LND JSON exports (`listchaintxns`, `closedchannels`, `fwdinghistory`)
+  passed together; closing fees are merged onto the matching closing transaction only
+  when this node initiated the close
+
+**Timeframe filtering:** `-f/--from YYYY-MM-DD` and `-u/--until YYYY-MM-DD` restrict
+which rows are transformed. Required for `lncli` exports, which always dump all history.
 
 If `-o` is not specified, output filename is auto-generated as `[input-basename]-transformed-[random].csv`.
 

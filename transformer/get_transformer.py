@@ -10,6 +10,10 @@ from .independent_reserve_transformer import IndependentReserveTransformer
 from .nexo_transformer import NexoTransformer
 from .exodus_transformer import ExodusTransformer
 from .etherscan_transformer import EtherscanTransformer
+from .electrum_transformer import ElectrumTransformer
+from .kraken_transformer import KrakenTransformer
+from .phoenix_transformer import PhoenixTransformer
+from .umbrel_transformer import UmbrelTransformer
 
 # Registry of available transformers
 TRANSFORMERS = {
@@ -18,9 +22,13 @@ TRANSFORMERS = {
     'nexo': NexoTransformer,
     'exodus': ExodusTransformer,
     'etherscan': EtherscanTransformer,
+    'electrum': ElectrumTransformer,
+    'kraken': KrakenTransformer,
+    'phoenix': PhoenixTransformer,
+    'umbrel': UmbrelTransformer,
 }
 
-def get_transformer(exchange_type, input_files, output_file):
+def get_transformer(exchange_type, input_files, output_file, start_date=None, end_date=None):
     """
     Get transformer instance for the specified exchange
 
@@ -28,6 +36,8 @@ def get_transformer(exchange_type, input_files, output_file):
         exchange_type: Name of the exchange (e.g., 'bitstamp')
         input_files: List of input CSV file paths
         output_file: Output CSV file path
+        start_date: Optional inclusive date lower bound for rows to keep
+        end_date: Optional inclusive date upper bound for rows to keep
 
     Returns:
         Transformer instance
@@ -42,4 +52,4 @@ def get_transformer(exchange_type, input_files, output_file):
         raise ValueError(f"Unsupported exchange type: {exchange_type}. Supported: {supported}")
 
     transformer_class = TRANSFORMERS[exchange_type]
-    return transformer_class(input_files, output_file)
+    return transformer_class(input_files, output_file, start_date=start_date, end_date=end_date)

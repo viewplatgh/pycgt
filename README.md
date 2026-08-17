@@ -120,7 +120,32 @@ python main.py -t -x bitstamp Bitstamp-Export.csv
 python main.py -t -x bitstamp -o converted.csv Bitstamp-Export.csv
 ```
 
-Supported exchanges: `bitstamp`, `independentreserve`, `nexo`, `exodus`, `etherscan`
+Supported exchanges: `bitstamp`, `independentreserve`, `nexo`, `exodus`, `etherscan`,
+`electrum`, `kraken`, `phoenix`, `umbrel`
+
+Some transformers take several files at once and join them internally:
+
+- `etherscan` - pass the transactions, ERC-20 token-transfer and beacon-withdrawal
+  exports for **one address** together; file types are detected from their headers,
+  so argument order does not matter. Run each address separately.
+- `umbrel` - pass the three LND JSON exports together:
+  ```sh
+  sudo docker exec -i  lightning_lnd_1 lncli listchaintxns  > onchain.json
+  sudo docker exec -it lightning_lnd_1 lncli closedchannels > closedchannels.json
+  sudo docker exec -i  lightning_lnd_1 lncli fwdinghistory --start_time 0 --max_events 50000 > forwards.json
+  ```
+
+#### Restricting to a timeframe
+
+Some exports (notably the `lncli` dumps) always contain the node's entire history.
+`-f/--from` and `-u/--until` keep only rows inside an inclusive date range:
+
+```sh
+python main.py -t -x umbrel -f 2025-07-01 -u 2026-06-30 -o umbrel-transformed.csv \
+  onchain.json closedchannels.json forwards.json
+```
+
+Both flags are optional and work with any transformer.
 
 ### 4. Consolidate pycgt Files (Merge Mode)
 

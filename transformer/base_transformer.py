@@ -2,6 +2,7 @@
 
 import csv
 from abc import ABC, abstractmethod
+from datetime import datetime
 from shared_def import FIELDS, CRYPTOS, LOCALE_FIAT, STABLECOINS
 from logger import logger
 from market_data_provider import MarketDataProviderFactory
@@ -11,18 +12,39 @@ from transaction import float_parser, datetime_parser
 class BaseTransformer(ABC):
     """Base class for exchange log transformers"""
 
-    def __init__(self, input_files, output_file):
+    def __init__(self, input_files, output_file, start_date=None, end_date=None):
         """
         Initialize transformer
 
         Args:
             input_files: List of input CSV file paths
             output_file: Output CSV file path
+            start_date: Optional inclusive date lower bound for rows to keep
+            end_date: Optional inclusive date upper bound for rows to keep
         """
         self.input_files = input_files
         self.output_file = output_file
+        self.start_date = start_date
+        self.end_date = end_date
         self.forex_provider = MarketDataProviderFactory.create_forex_provider()
         self.crypto_provider = MarketDataProviderFactory.create_crypto_provider()
+
+    def in_timeframe(self, value):
+        """
+        Check whether a datetime/date falls inside the configured timeframe.
+
+        Returns True when no timeframe is configured, so transformers reading
+        exports that are already scoped to a financial year need no changes.
+        """
+        if value is None:
+            return False
+
+        value_date = value.date() if isinstance(value, datetime) else value
+        if self.start_date and value_date < self.start_date:
+            return False
+        if self.end_date and value_date > self.end_date:
+            return False
+        return True
 
     @abstractmethod
     def transform(self):
