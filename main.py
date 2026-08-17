@@ -3,6 +3,7 @@ import pprint
 import csv
 import copy
 import argparse
+from datetime import datetime
 from transaction import Transaction
 from annual_statement import AnnualStatement
 from shared_def import SORT_BY_DATETIME_ASC, OPERATIONS, FIELDS, LOCALE_FIAT
@@ -14,6 +15,14 @@ from utils import generate_default_output_filename
 
 
 pp = pprint.PrettyPrinter(indent=2, width=100, compact=True)
+
+
+def parse_date_argument(value):
+  """Parse a YYYY-MM-DD command line date into a date object"""
+  try:
+    return datetime.strptime(value, '%Y-%m-%d').date()
+  except ValueError:
+    raise argparse.ArgumentTypeError(f"Expected a date as YYYY-MM-DD, got: {value}")
 
 
 def process_cgt_report(csv_files):
@@ -96,14 +105,17 @@ def process_cgt_report(csv_files):
     item[1].report()
 
 
-def transform_logs(csv_files, exchange_type, output_file):
+def transform_logs(csv_files, exchange_type, output_file, start_date=None, end_date=None):
   """Transform exchange logs to pycgt format"""
 
   logger.info(f"Transforming {len(csv_files)} file(s) from {exchange_type} format to pycgt format")
   logger.info(f"Output will be written to: {output_file}")
+  if start_date or end_date:
+    logger.info(f"Restricting to timeframe: {start_date or 'beginning'} .. {end_date or 'end'}")
 
   try:
-    transformer = get_transformer(exchange_type, csv_files, output_file)
+    transformer = get_transformer(exchange_type, csv_files, output_file,
+                                  start_date=start_date, end_date=end_date)
     transformer.transform()
     logger.info("Transformation completed successfully")
   except ValueError as e:
@@ -161,11 +173,21 @@ Examples:
                       help='Exchange type (e.g., bitstamp) - required with -t')
   parser.add_argument('-o', '--output', type=str, metavar='OUTPUT',
                       help='Output filename for transformed/consolidated CSV (default: [first-input]-transformed-[random].csv)')
+  parser.add_argument('-f', '--from', dest='from_date', type=parse_date_argument, metavar='YYYY-MM-DD',
+                      help='Only transform rows on or after this date - for exports that cover all time')
+  parser.add_argument('-u', '--until', dest='until_date', type=parse_date_argument, metavar='YYYY-MM-DD',
+                      help='Only transform rows on or before this date - for exports that cover all time')
 
   args = parser.parse_args()
 
   if args.transform and args.merge:
     parser.error('-t/--transform and -m/--merge are mutually exclusive')
+
+  if (args.from_date or args.until_date) and not args.transform:
+    parser.error('-f/--from and -u/--until can only be used with -t/--transform')
+
+  if args.from_date and args.until_date and args.from_date > args.until_date:
+    parser.error('-f/--from must not be later than -u/--until')
 
   # Validate transform mode arguments
   if args.transform:
@@ -178,7 +200,8 @@ Examples:
       output_file = generate_default_output_filename(args.files[0])
       logger.info(f"No output file specified, using default: {output_file}")
 
-    transform_logs(args.files, args.exchange, output_file)
+    transform_logs(args.files, args.exchange, output_file,
+                   start_date=args.from_date, end_date=args.until_date)
   elif args.merge:
     if args.exchange:
       parser.error('-x/--exchange can only be used with -t/--transform')
